@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludus of Kris - Poker Ledger</title>
+    <title>Ludus Magnus: Poker Gladiator School</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -301,8 +301,8 @@
         <div class="logo-container">
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
-        <h1>Ludus of Kris</h1>
-        <div class="subtitle">Ludus Magnus: Poker Gladiator School · Est. 2026</div>
+        <h1>Ludus Magnus: Poker Gladiator School</h1>
+        <div class="subtitle">circa 2026 AD</div>
     </header>
 
     <div class="leaderboard-section">
@@ -472,7 +472,7 @@
 
             const chartDatasets = distinctNames.map((name, idx) => {
                 let runningCumulativeProfit = 0;
-                const dataTimelinePoints = [0];
+                const dataTimelinePoints = [0]; 
 
                 distinctDates.forEach(date => {
                     const matches = filteredRecords.filter(r => r.date === date && r.name === name);
@@ -488,8 +488,8 @@
                     borderColor: GLADIATOR_COLORS[idx % GLADIATOR_COLORS.length],
                     backgroundColor: 'transparent',
                     borderWidth: 2,
-                    pointRadius: 3,
-                    tension: 0.15
+                    pointRadius: 4,
+                    tension: 0.1
                 };
             });
 
