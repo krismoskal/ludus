@@ -268,7 +268,7 @@
 
         .progress-cell { width: 140px; }
         .progress-wrapper { display: flex; align-items: center; gap: 8px; }
-        
+
         .bar-container {
             width: 60px;
             height: 8px;
@@ -301,8 +301,11 @@
         <div class="logo-container">
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
-        <h1>Ludus Magnus: Poker Gladiator School</h1>
-        <div class="subtitle">circa 2026 AD</div>
+        <div class="title-wrapper" style="display: flex; align-items: baseline; justify-content: center; gap: 12px; margin-bottom: 4px;">
+            <h1 style="font-family: 'Times New Roman', serif; font-size: 2.4rem; color: #c5a059; margin: 0; text-transform: uppercase;">Ludus Magnus</h1>
+            <span style="font-family: 'Times New Roman', serif; font-size: 0.85rem; color: #b5a499; text-transform: uppercase;">circa 2026 AD</span>
+        </div>
+        <h2 style="font-family: 'Times New Roman', serif; font-size: 1.15rem; color: #b5a499; margin: 0; text-transform: uppercase; font-weight: normal;">Poker Gladiator School</h2>
     </header>
 
     <div class="leaderboard-section">
@@ -312,7 +315,7 @@
             <button class="btn-filter" onclick="changeTimelineFilter('year', this)">This Year</button>
             <button class="btn-filter" onclick="changeTimelineFilter('lastyear', this)">Last Year</button>
         </div>
-        
+
         <div class="chart-box" id="chart-wrapper">
             <canvas id="arenaStockChart"></canvas>
         </div>
@@ -362,11 +365,7 @@
         }
 
         function processRawSpreadsheet(csvText) {
-            const rows = csvText.split(/?
-/).map(line => {
-                return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
-            });
-
+            const rows = csvText.split(/\r?\n/).map(line => line.split(',').map(v => v.replace(/^"|"$/g, '').trim()));
             if (rows.length < 2) {
                 document.getElementById('leaderboard-target').innerHTML = '<div class="empty-arena">No records found.</div>';
                 return;
@@ -429,7 +428,6 @@
                 boardContainer.innerHTML = `<div class="empty-arena">⚔️ The arena sits silent. No blood has been spilled during this timeline filter.</div>`;
                 return;
             }
-
             chartWrapper.style.display = 'block';
 
             const summaries = {};
@@ -472,7 +470,7 @@
 
             const chartDatasets = distinctNames.map((name, idx) => {
                 let runningCumulativeProfit = 0;
-                const dataTimelinePoints = [0]; 
+                const dataTimelinePoints =;
 
                 distinctDates.forEach(date => {
                     const matches = filteredRecords.filter(r => r.date === date && r.name === name);
