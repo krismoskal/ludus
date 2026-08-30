@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludus of Kris - Poker Standings</title>
+    <title>Ludus of Kris - Poker Lanista</title>
     <style>
         :root {
             --bg-color: #1a1613;
@@ -197,7 +197,7 @@
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
         <h1>Ludus of Kris</h1>
-        <div class="subtitle">Gladiatorial Poker Standings</div>
+        <div class="subtitle">Gladiatorial Poker School</div>
     </header>
 
     <div class="accordion-container" id="ledger">
@@ -205,57 +205,55 @@
     </div>
 
     <script>
-        // Target Sheet ID
         const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
         const SHEET_URL = `https://google.com{SHEET_ID}/export?format=csv&gid=0`;
 
         async function fetchPokerData() {
             try {
                 const response = await fetch(SHEET_URL);
-                if (!response.ok) throw new Error('Network file access error');
+                if (!response.ok) throw new Error('File access error');
                 const csvText = await response.text();
                 parseAndRenderData(csvText);
             } catch (error) {
                 document.getElementById('ledger').innerHTML = `
                     <div class="loading" style="color:var(--loss-red);">
-                        Error accessing records. Verify that "Anyone with the link can view" option is active.
+                        Error accessing records. Check console log metrics.
                     </div>`;
                 console.error(error);
             }
         }
 
         function parseAndRenderData(csvData) {
-            // Smart safe line parsing
+            // Split lines safely accounting for commas within quoted boundaries
             const rows = csvData.split(/\r?\n/).map(line => {
                 return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.replace(/^"|"$/g, '').trim());
             });
 
             if (rows.length < 2) {
-                document.getElementById('ledger').innerHTML = '<div class="loading">No arena records found. Add columns in your sheet.</div>';
+                document.getElementById('ledger').innerHTML = '<div class="loading">No arena records found.</div>';
                 return;
             }
 
-            // Read the real headers to prevent data column indexing drift
-            const headers = rows[0].map(h => h.toLowerCase());
+            // Simple header index identifier targeting exact cell phrases
+            const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
             const dateIdx = headers.findIndex(h => h.includes('date'));
             const nameIdx = headers.findIndex(h => h.includes('name'));
-            const cashBuyIdx = headers.findIndex(h => h.includes('cash buy'));
-            const tourneyBuyIdx = headers.findIndex(h => h.includes('tourn'));
-            const cashWinIdx = headers.findIndex(h => h.includes('cash win'));
-            const tourneyWinIdx = headers.findIndex(h => h.includes('tourn') && h.includes('win'));
+            const cashBuyIdx = headers.findIndex(h => h.includes('cashbuy'));
+            const tourneyBuyIdx = headers.findIndex(h => h.includes('tourneybuy') || h.includes('tournby'));
+            const cashWinIdx = headers.findIndex(h => h.includes('cashwin'));
+            const tourneyWinIdx = headers.findIndex(h => h.includes('tourneywin') || h.includes('tournwn'));
             const evidenceIdx = headers.findIndex(h => h.includes('evid') || h.includes('proof') || h.includes('screenshot'));
 
             const sessionsByDate = {};
 
-            // Cycle data lines safely
             for (let i = 1; i < rows.length; i++) {
                 const currentLine = rows[i];
-                if (!currentLine || currentLine.length === 0 || !currentLine[dateIdx]) continue;
+                if (!currentLine || currentLine.length < 2 || !currentLine[dateIdx]) continue;
 
                 const dateValue = currentLine[dateIdx];
                 const nameValue = currentLine[nameIdx] || "Unknown Gladiator";
 
-                // Fallback to absolute positional indexes if custom name headers match poorly
+                // Read matched index mappings, default to direct indices 2,3,4,5 if columns break
                 const cBuy = parseFloat(currentLine[cashBuyIdx !== -1 ? cashBuyIdx : 2]) || 0;
                 const tBuy = parseFloat(currentLine[tourneyBuyIdx !== -1 ? tourneyBuyIdx : 3]) || 0;
                 const cWin = parseFloat(currentLine[cashWinIdx !== -1 ? cashWinIdx : 4]) || 0;
@@ -291,9 +289,11 @@
             container.innerHTML = '';
 
             if (sortedDates.length === 0) {
-                container.innerHTML = '<div class="loading">No arena records found. Add entry data into rows.</div>';
+                container.innerHTML = '<div class="loading">No structural log records resolved.</div>';
                 return;
             }
 
             sortedDates.forEach((date, index) => {
                 const section = document.createElement('div');
+                section.className = `date-section ${index === 0 ? 'active' : ''}`;
+
