@@ -3,605 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludus Magnus: Poker Gladiator School</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Ludus Magnus - Poker Gladiator School</title>
     <style>
-        :root {
-            --bg-color: #16120f;
-            --card-bg: #231b15;
-            --border-gold: #c5a059;
-            --text-light: #f5efe6;
-            --text-muted: #a39285;
-            --profit-green: #4caf50;
-            --loss-red: #f44336;
-        }
-
         body {
-            font-family: 'Georgia', serif;
-            background-color: var(--bg-color);
-            color: var(--text-light);
+            background-color: #120e0a;
+            color: #d4b589;
+            font-family: 'Cinzel', 'Georgia', serif;
             margin: 0;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        header {
             text-align: center;
-            margin-bottom: 30px;
         }
-
-        .logo-container {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 15px auto;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
-            background-color: #221a14;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #1c1510;
+            border: 2px solid #6b4e28;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
-
-        .logo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
         h1 {
-            font-family: 'Times New Roman', serif;
+            color: #f3af4a;
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
             letter-spacing: 2px;
-            color: var(--border-gold);
-            margin: 0 0 5px 0;
-            text-transform: uppercase;
         }
-
-        .subtitle {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .leaderboard-section {
-            width: 100%;
-            max-width: 900px;
-            background-color: var(--card-bg);
-            border: 1px solid #3d312a;
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }
-
-        .leaderboard-title {
-            font-family: 'Times New Roman', serif;
-            color: var(--border-gold);
-            font-size: 1.4rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        h2 {
+            color: #d4b589;
+            font-size: 1.5em;
             margin-top: 0;
-            margin-bottom: 15px;
-            border-bottom: 1px dashed #3d312a;
-            padding-bottom: 8px;
-            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
         }
-
-        .filter-container {
+        .tabs {
             display: flex;
             justify-content: center;
+            margin-bottom: 20px;
             gap: 10px;
-            margin-bottom: 20px;
         }
-
-        .btn-filter {
-            background-color: #1a1411;
-            border: 1px solid #4a3b32;
-            color: var(--text-muted);
-            padding: 8px 16px;
-            font-family: 'Times New Roman', serif;
-            text-transform: uppercase;
-            font-size: 0.85rem;
+        .tab-btn {
+            background: #2d2219;
+            color: #d4b589;
+            border: 1px solid #6b4e28;
+            padding: 10px 20px;
             cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.2s ease;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
         }
-
-        .btn-filter.active, .btn-filter:hover {
-            border-color: var(--border-gold);
-            color: var(--border-gold);
-            background-color: #2b211b;
+        .tab-btn:hover, .tab-btn.active {
+            background: #f3af4a;
+            color: #120e0a;
+            font-weight: bold;
+            border-color: #f3af4a;
         }
-
-        .chart-box {
-            background-color: #110d0a;
-            border: 1px solid #2d241f;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 20px;
-            height: 320px;
-            position: relative;
-        }
-
-        .ranking-list {
+        .table-container {
+            background: #0f0b08;
+            border: 1px solid #3d2d1b;
+            padding: 20px;
+            min-height: 200px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-        }
-
-        .gladiator-row {
-            display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px;
-            background-color: #1a1411;
-            border: 1px solid #2d241f;
-            border-radius: 4px;
         }
-
-        .gladiator-row.champion {
-            border: 2px solid var(--border-gold);
-            background: linear-gradient(to right, #2a2119, #1a1411);
-            box-shadow: 0 0 10px rgba(197, 160, 89, 0.15);
-        }
-
-        .gladiator-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .gladiator-badge {
-            font-size: 1.4rem;
-            width: 30px;
-            text-align: center;
-        }
-
-        .gladiator-name {
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        .gladiator-status {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .gladiator-metric {
-            font-family: monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-
-        .empty-arena {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-            font-style: italic;
-            font-size: 1rem;
-        }
-
-        .timeline-section {
-            width: 100%;
-            max-width: 900px;
-        }
-
-        .timeline-title {
-            font-family: 'Times New Roman', serif;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .date-section {
-            background-color: var(--card-bg);
-            border: 1px solid #3d312a;
-            border-left: 4px solid var(--border-gold);
-            margin-bottom: 10px;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .date-header {
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            background: linear-gradient(to right, #231b15, #1e1712);
-        }
-
-        .date-header:hover { background: #2b211a; }
-
-        .date-text {
-            font-weight: bold;
-            font-size: 1.05rem;
-            letter-spacing: 0.5px;
-        }
-
-        .arrow {
-            transition: transform 0.2s ease;
-            color: var(--border-gold);
-        }
-
-        .date-content {
-            display: none;
-            padding: 0;
-            overflow-x: auto;
-            border-top: 1px solid #3d312a;
-        }
-
-        .date-section.active .date-content { display: block; }
-        .date-section.active .arrow { transform: rotate(90deg); }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            text-align: left;
-            min-width: 750px;
+            margin-top: 10px;
         }
-
         th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #3d312a;
-            font-size: 0.9rem;
+            padding: 12px;
+            border-bottom: 1px solid #3d2d1b;
+            text-align: left;
         }
-
         th {
-            background-color: #1a1411;
-            color: var(--border-gold);
-            font-family: 'Times New Roman', serif;
+            background-color: #2d2219;
+            color: #f3af4a;
             text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
+            font-size: 0.9em;
         }
-
-        tr:hover { background-color: #2b211a; }
-
-        .progress-cell { width: 140px; }
-        .progress-wrapper { display: flex; align-items: center; gap: 8px; }
-
-        .bar-container {
-            width: 60px;
-            height: 8px;
-            background-color: #130d0a;
-            border-radius: 4px;
-            position: relative;
-            overflow: hidden;
+        tr:hover {
+            background-color: #1c1510;
         }
-
-        .progress-bar { height: 100%; position: absolute; top: 0; }
-        .progress-bar.gain { background-color: var(--profit-green); left: 0; }
-        .progress-bar.loss { background-color: var(--loss-red); right: 0; }
-
-        .amount { font-family: monospace; font-size: 0.95rem; }
-        .profit { color: var(--profit-green); font-weight: bold; }
-        .loss { color: var(--loss-red); }
-        .neutral { color: var(--text-muted); }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--border-gold);
+        .status-msg {
             font-style: italic;
+            color: #8a7051;
+        }
+        .error-msg {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        .ledger-title {
+            margin-top: 40px;
+            color: #f3af4a;
+            font-size: 1.8em;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-container">
-            <img src="logo.png" alt="Ludus of Kris Logo">
+    <div class="container">
+        <div class="logo-area">
+            <!-- Placeholder for Ludus of Kris Logo -->
+            <div style="font-size: 50px; margin-bottom: 10px;">⚔️</div>
         </div>
-        <div class="title-wrapper" style="display: flex; align-items: baseline; justify-content: center; gap: 12px; margin-bottom: 4px;">
-            <h1 style="font-family: 'Times New Roman', serif; font-size: 2.4rem; color: #c5a059; margin: 0; text-transform: uppercase;">Ludus Magnus</h1>
-            <span style="font-family: 'Times New Roman', serif; font-size: 0.85rem; color: #b5a499; text-transform: uppercase;">circa 2026 AD</span>
-        </div>
-        <h2 style="font-family: 'Times New Roman', serif; font-size: 1.15rem; color: #b5a499; margin: 0; text-transform: uppercase; font-weight: normal;">Poker Gladiator School</h2>
-    </header>
+        <h1>Ludus Magnus</h1>
+        <div style="font-size: 0.8em; color: #8a7051; margin-bottom: 20px;">circa 2026 AD</div>
+        <h2>Poker Gladiator School</h2>
 
-    <div class="leaderboard-section">
-        <div class="leaderboard-title">Arena Standings</div>
-        <div class="filter-container">
-            <button class="btn-filter active" onclick="changeTimelineFilter('month', this)">This Month</button>
-            <button class="btn-filter" onclick="changeTimelineFilter('year', this)">This Year</button>
-            <button class="btn-filter" onclick="changeTimelineFilter('lastyear', this)">Last Year</button>
+        <h3>Arena Standings</h3>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('month')">This Month</button>
+            <button class="tab-btn" onclick="switchTab('year')">This Year</button>
+            <button class="tab-btn" onclick="switchTab('last_year')">Last Year</button>
         </div>
 
-        <div class="chart-box" id="chart-wrapper">
-            <canvas id="arenaStockChart"></canvas>
+        <div class="table-container" id="standings-container">
+            <div class="status-msg" id="standings-status">Evaluating arena champions...</div>
         </div>
 
-        <div id="leaderboard-target">
-            <div class="loading">Evaluating arena champions...</div>
-        </div>
-    </div>
-
-    <div class="timeline-section">
-        <div class="timeline-title">⚔️ Battle Ledger Timeline</div>
-        <div id="timeline-target">
-            <div class="loading">Unrolling ancient ledger archives...</div>
+        <div class="ledger-title">⚔ Battle Ledger Timeline</div>
+        <div class="table-container" id="ledger-container" style="margin-top: 10px;">
+            <div class="status-msg" id="ledger-status">Unrolling ancient ledger archives...</div>
         </div>
     </div>
 
     <script>
-        const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+        const sheetId = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
+        
+        // Define spreadsheet tabs/sheets indices or names
+        // Gviz allows targeting via gid (grid id) or sheet name
+        // We will query the main spreadsheet structure.
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
 
-        let GLOBAL_RAW_DATA = [];
-        let CURRENT_ACTIVE_FILTER = 'month';
-        let ARENA_CHART_INSTANCE = null;
+        let cachedData = null;
+        let currentTab = 'month';
 
-        const GLADIATOR_COLORS = [
-            '#c5a059', '#4caf50', '#f44336', '#00bcd4', '#9c27b0', '#ff9800', '#2196f3'
-        ];
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+        });
 
-        async function initArenaPipeline() {
-            try {
-                const response = await fetch(SHEET_URL);
-                if (!response.ok) throw new Error('Spreadsheet fetch failed');
-                const csvData = await response.text();
-                processRawSpreadsheet(csvData);
-            } catch (error) {
-                const errorMarkup = `<div class="loading" style="color:var(--loss-red);">Ledger locked. Verify Google Sheet configurations.</div>`;
-                document.getElementById('leaderboard-target').innerHTML = errorMarkup;
-                document.getElementById('timeline-target').innerHTML = errorMarkup;
-            }
-        }
-
-        function cleanStringNumber(val) {
-            if (val === undefined || val === null) return 0;
-            let str = String(val).replace(/[^0-9.-]/g, '');
-            let parsed = parseFloat(str);
-            return isNaN(parsed) ? 0 : parsed;
-        }
-
-        function processRawSpreadsheet(csvText) {
-            const rows = csvText.split(/\r?\n/).map(line => line.split(',').map(v => v.replace(/^"|"$/g, '').trim()));
-            if (rows.length < 2) {
-                document.getElementById('leaderboard-target').innerHTML = '<div class="empty-arena">No records found.</div>';
-                return;
-            }
-
-            const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
-            const dIdx = headers.findIndex(h => h.includes('date'));
-            const nIdx = headers.findIndex(h => h.includes('name'));
-            const cbIdx = headers.findIndex(h => h.includes('cashbuy'));
-            const tbIdx = headers.findIndex(h => h.includes('tourneybuy'));
-            const cwIdx = headers.findIndex(h => h.includes('cashwin'));
-            const twIdx = headers.findIndex(h => h.includes('tourneywin'));
-
-            GLOBAL_RAW_DATA = [];
-
-            for (let i = 1; i < rows.length; i++) {
-                const current = rows[i];
-                if (!current || current.length <= Math.max(dIdx, nIdx) || !current[dIdx]) continue;
-
-                GLOBAL_RAW_DATA.push({
-                    date: current[dIdx],
-                    name: current[nIdx] || "Unknown Gladiator",
-                    cashBuy: cleanStringNumber(current[cbIdx]),
-                    tourneyBuy: cleanStringNumber(current[tbIdx]),
-                    cashWin: cleanStringNumber(current[cwIdx]),
-                    tourneyWin: cleanStringNumber(current[twIdx])
-                });
-            }
-
-            renderTimelineLedger();
-            calculateAndRenderRankings();
-        }
-
-        function calculateAndRenderRankings() {
-            const boardContainer = document.getElementById('leaderboard-target');
-            const chartWrapper = document.getElementById('chart-wrapper');
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const currentMonth = now.getMonth();
-
-            const filteredRecords = GLOBAL_RAW_DATA.filter(item => {
-                const itemDate = new Date(item.date + "T00:00:00");
-                if (isNaN(itemDate.getTime())) return false;
-
-                const matchYear = itemDate.getFullYear();
-                const matchMonth = itemDate.getMonth();
-
-                if (CURRENT_ACTIVE_FILTER === 'month') {
-                    return matchYear === currentYear && matchMonth === currentMonth;
-                } else if (CURRENT_ACTIVE_FILTER === 'year') {
-                    return matchYear === currentYear;
-                } else if (CURRENT_ACTIVE_FILTER === 'lastyear') {
-                    return matchYear === (currentYear - 1);
-                }
-                return true;
-            });
-
-            if (filteredRecords.length === 0) {
-                chartWrapper.style.display = 'none';
-                boardContainer.innerHTML = `<div class="empty-arena">⚔️ The arena sits silent. No blood has been spilled during this timeline filter.</div>`;
-                return;
-            }
-            chartWrapper.style.display = 'block';
-
-            const summaries = {};
-            filteredRecords.forEach(r => {
-                if (!summaries[r.name]) summaries[r.name] = 0;
-                summaries[r.name] += (r.cashWin + r.tourneyWin) - (r.cashBuy + r.tourneyBuy);
-            });
-
-            const sortedStandings = Object.keys(summaries).map(name => ({
-                name: name,
-                netProfit: summaries[name]
-            })).sort((a, b) => b.netProfit - a.netProfit);
-
-            boardContainer.innerHTML = '<div class="ranking-list"></div>';
-            const listElement = boardContainer.querySelector('.ranking-list');
-
-            sortedStandings.forEach((player, rankIndex) => {
-                const isTop = rankIndex === 0 && player.netProfit > 0;
-                const row = document.createElement('div');
-                row.className = `gladiator-row ${isTop ? 'champion' : ''}`;
-                const badge = isTop ? '👑' : '🛡️';
-                const rankTitle = isTop ? 'Strongest Gladiator' : 'Rookie Gladiator';
-                const scoreClass = player.netProfit > 0 ? 'profit' : (player.netProfit < 0 ? 'loss' : 'neutral');
-
-                row.innerHTML = `
-                    <div class="gladiator-info">
-                        <div class="gladiator-badge">${badge}</div>
-                        <div>
-                            <div class="gladiator-name">${player.name}</div>
-                            <div class="gladiator-status">${rankTitle}</div>
-                        </div>
-                    </div>
-                    <div class="gladiator-metric ${scoreClass}">${player.netProfit >= 0 ? '+' : ''}$${player.netProfit.toFixed(2)}</div>
-                `;
-                listElement.appendChild(row);
-            });
-
-            const distinctDates = [...new Set(filteredRecords.map(r => r.date))].sort((a,b) => new Date(a) - new Date(b));
-            const distinctNames = [...new Set(filteredRecords.map(r => r.name))];
-
-            const chartDatasets = distinctNames.map((name, idx) => {
-                let runningCumulativeProfit = 0;
-                const dataTimelinePoints =;
-
-                distinctDates.forEach(date => {
-                    const matches = filteredRecords.filter(r => r.date === date && r.name === name);
-                    matches.forEach(m => {
-                        runningCumulativeProfit += (m.cashWin + m.tourneyWin) - (m.cashBuy + m.tourneyBuy);
-                    });
-                    dataTimelinePoints.push(runningCumulativeProfit);
-                });
-
-                return {
-                    label: name,
-                    data: dataTimelinePoints,
-                    borderColor: GLADIATOR_COLORS[idx % GLADIATOR_COLORS.length],
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    tension: 0.1
-                };
-            });
-
-            const chartLabels = ["Start", ...distinctDates.map(d => {
-                const p = new Date(d + "T00:00:00");
-                return isNaN(p) ? d : p.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
-            })];
-
-            if (ARENA_CHART_INSTANCE) ARENA_CHART_INSTANCE.destroy();
-
-            const ctx = document.getElementById('arenaStockChart').getContext('2d');
-            ARENA_CHART_INSTANCE = new Chart(ctx, {
-                type: 'line',
-                data: { labels: chartLabels, datasets: chartDatasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { color: '#2d241f' }, ticks: { color: '#a39285', font: { family: 'Georgia' } } },
-                        y: { grid: { color: '#2d241f' }, ticks: { color: '#a39285', callback: v => '$' + v } }
-                    },
-                    plugins: {
-                        legend: { labels: { color: '#f5efe6', font: { family: 'Georgia', size: 12 } } }
+        function fetchData() {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
                     }
-                }
-            });
+                    return response.text();
+                })
+                .then(responseText => {
+                    // Extract clean JSON payload from Google Visualization wrapper
+                    const matches = responseText.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]*)\);/);
+                    if (!matches || matches.length < 2) {
+                        throw new Error('Invalid JSON structure returned from Google Sheets');
+                    }
+                    
+                    const jsonObj = JSON.parse(matches[1]);
+                    if (jsonObj.status === 'error') {
+                        throw new Error(jsonObj.errors[0].detailed_message || 'Google Sheets API error');
+                    }
+                    
+                    cachedData = jsonObj.table;
+                    renderData();
+                })
+                .catch(err => {
+                    console.error("Data load failed: ", err);
+                    document.getElementById('standings-status').className = "error-msg";
+                    document.getElementById('standings-status').innerText = "Failed to evaluate arena champions. Ensure the Google Sheet is set to 'Anyone with the link can view'.";
+                    
+                    document.getElementById('ledger-status').className = "error-msg";
+                    document.getElementById('ledger-status').innerText = "Failed to unroll ancient ledger archives.";
+                });
         }
 
-        function renderTimelineLedger() {
-            const timelineContainer = document.getElementById('timeline-target');
-            timelineContainer.innerHTML = '';
-
-            const sessionGroups = {};
-            GLOBAL_RAW_DATA.forEach(row => {
-                if (!sessionGroups[row.date]) sessionGroups[row.date] = [];
-                sessionGroups[row.date].push(row);
-            });
-
-            const sortedDates = Object.keys(sessionGroups).sort((a, b) => new Date(b) - new Date(a));
-
-            sortedDates.forEach((date, dateIndex) => {
-                const section = document.createElement('div');
-                section.className = `date-section ${dateIndex === 0 ? 'active' : ''}`;
-
-                let headerDate = date;
-                try {
-                    const parsed = new Date(date + "T00:00:00");
-                    if (!isNaN(parsed)) headerDate = parsed.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                } catch(e) {}
-
-                section.innerHTML = `
-                    <div class="date-header" onclick="toggleAccordionElement(this)">
-                        <span class="date-text">📜 Arena Session: ${headerDate}</span>
-                        <span class="arrow">▶</span>
-                    </div>
-                    <div class="date-content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Gladiator Name</th>
-                                    <th>Cash Buy-In</th>
-                                    <th>Tourney Buy-In</th>
-                                    <th>Total Buy-In</th>
-                                    <th>Cash Winnings</th>
-                                    <th>Tourney Winnings</th>
-                                    <th>Total Winnings</th>
-                                    <th>Performance Net</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${sessionGroups[date].map(p => {
-                                    const tBuy = p.cashBuy + p.tourneyBuy;
-                                    const tWin = p.cashWin + p.tourneyWin;
-                                    const net = tWin - tBuy;
-                                    const percentageWidth = Math.min(Math.abs(net) / 100 * 100, 100);
-
-                                    return `
-                                        <tr>
-                                            <td><strong>${p.name}</strong></td>
-                                            <td class="amount">$${p.cashBuy.toFixed(2)}</td>
-                                            <td class="amount">$${p.tourneyBuy.toFixed(2)}</td>
-                                            <td class="amount">$${tBuy.toFixed(2)}</td>
-                                            <td class="amount">$${p.cashWin.toFixed(2)}</td>
-                                            <td class="amount">$${p.tourneyWin.toFixed(2)}</td>
-                                            <td class="amount">$${tWin.toFixed(2)}</td>
-                                            <td class="progress-cell">
-                                                <div class="progress-wrapper">
-                                                    <div class="bar-container">
-                                                        <div class="progress-bar ${net >= 0 ? 'gain' : 'loss'}" style="width: ${percentageWidth}%"></div>
-                                                    </div>
-                                                    <span class="amount ${net > 0 ? 'profit' : (net < 0 ? 'loss' : 'neutral')}">${net >= 0 ? '+' : ''}$${net.toFixed(2)}</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                timelineContainer.appendChild(section);
-            });
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderData();
         }
 
-        function toggleAccordionElement(el) { el.parentElement.classList.toggle('active'); }
+        function renderData() {
+            if (!cachedData) return;
 
-        function changeTimelineFilter(filterKey, buttonSelector) {
-            CURRENT_ACTIVE_FILTER = filterKey;
-            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-            buttonSelector.classList.add('active');
-            calculateAndRenderRankings();
+            const standingsStatus = document.getElementById('standings-status');
+            const standingsContainer = document.getElementById('standings-container');
+            const ledgerStatus = document.getElementById('ledger-status');
+            const ledgerContainer = document.getElementById('ledger-container');
+
+            // Clear previous elements if data exists
+            standingsContainer.innerHTML = '';
+            ledgerContainer.innerHTML = '';
+
+            const cols = cachedData.cols.map(c => c.label || '');
+            const rows = cachedData.rows;
+
+            if (rows.length === 0) {
+                standingsContainer.innerHTML = '<div class="status-msg">No champions found in this arena arena yet.</div>';
+                ledgerContainer.innerHTML = '<div class="status-msg">The ledger is empty.</div>';
+                return;
+            }
+
+            // Build Standings Table
+            // Note: Since we don't have your explicit columns, this maps whatever columns are in sheet 1 dynamically.
+            const standingsTable = document.createElement('table');
+            const thead = document.createElement('thead');
+            const thr = document.createElement('tr');
+            
+            // Generate Headers
+            cols.forEach(colLabel => {
+                const th = document.createElement('th');
+                th.innerText = colLabel || 'Column';
+                thr.appendChild(th);
+            });
+            thead.appendChild(thr);
+            standingsTable.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            
+            // Generate Rows
+            rows.forEach(rowData => {
+                const tr = document.createElement('tr');
+                rowData.c.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.innerText = cell ? (cell.f || cell.v || '') : '';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            
+            standingsTable.appendChild(tbody);
+            standingsContainer.appendChild(standingsTable);
+
+            // Populate historical ledger container with a matching copy for visibility
+            const ledgerTable = standingsTable.cloneNode(true);
+            ledgerContainer.appendChild(ledgerTable);
         }
-
-        initArenaPipeline();
     </script>
 </body>
 </html>
