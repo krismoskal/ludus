@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludus of Kris - Poker Ledger</title>
+    <title>Ludus of Kris - Poker Standings</title>
     <style>
         :root {
             --bg-color: #1a1613;
@@ -31,7 +31,6 @@
             margin-bottom: 30px;
         }
 
-        /* Using your custom Roman Ludus logo element */
         .logo-container {
             width: 180px;
             height: 180px;
@@ -100,6 +99,7 @@
         .arrow {
             transition: transform 0.2s ease;
             color: var(--border-gold);
+            display: inline-block;
         }
 
         .date-content {
@@ -109,7 +109,6 @@
             border-top: 1px solid #3d312a;
         }
 
-        /* Active/Expanded states */
         .date-section.active .date-content {
             display: block;
         }
@@ -153,6 +152,36 @@
         .loss { color: var(--loss-red); }
         .neutral { color: var(--text-muted); }
 
+        .evidence-container {
+            padding: 15px 20px;
+            background-color: #201915;
+            border-top: 1px dashed #3d312a;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-evidence {
+            background-color: transparent;
+            border: 1px solid var(--border-gold);
+            color: var(--border-gold);
+            padding: 6px 14px;
+            font-family: 'Times New Roman', serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-evidence:hover {
+            background-color: var(--border-gold);
+            color: var(--bg-color);
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -165,7 +194,6 @@
 
     <header>
         <div class="logo-container">
-            <!-- Replace 'logo.png' with your actual downloaded image path or web URL -->
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
         <h1>Ludus of Kris</h1>
@@ -177,46 +205,54 @@
     </div>
 
     <script>
-        // Paste your published Google Sheet ID below
+        // Target Sheet ID
         const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-        const SHEET_URL = `https://google.com{SHEET_ID}/gviz/tq?tqx=out:csv`;
+
+        // NEW BULLETPROOF EXPORT LINK FORMAT (Bypasses visualization API restrictions)
+        const SHEET_URL = `https://google.com{SHEET_ID}/export?format=csv&gid=0`;
 
         async function fetchPokerData() {
             try {
                 const response = await fetch(SHEET_URL);
+                if (!response.ok) throw new Error('Network file access error');
                 const csvText = await response.text();
                 parseAndRenderData(csvText);
             } catch (error) {
-                document.getElementById('ledger').innerHTML = `<div class="loading" style="color:red;">Error accessing records. Verify Sheet sharing configuration.</div>`;
+                document.getElementById('ledger').innerHTML = `
+                    <div class="loading" style="color:var(--loss-red);">
+                        Error accessing records. Verify that "Anyone with the link can view" option is fully active on Google Drive.
+                    </div>`;
                 console.error(error);
             }
         }
 
         function parseAndRenderData(csvData) {
-            // Simple robust CSV line splitter
             const lines = csvData.split(/\r?\n/).map(line => {
                 return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.replace(/^"|"$/g, '').trim());
             });
 
-            // Assuming headers: Date, Name, Cash Buyin, Tourney Buyin, Cash Winnings, Tourney Winnings
             const dataRows = lines.slice(1).filter(row => row.length >= 6 && row[0] !== "");
 
-            // Group transactions by date
             const sessionsByDate = {};
             dataRows.forEach(row => {
                 const date = row[0];
-                if (!sessionsByDate[date]) sessionsByDate[date] = [];
+                if (!sessionsByDate[date]) sessionsByDate[date] = { players: [], evidenceUrl: "" };
 
                 const cashBuyin = parseFloat(row[2]) || 0;
                 const tourneyBuyin = parseFloat(row[3]) || 0;
                 const cashWinnings = parseFloat(row[4]) || 0;
                 const tourneyWinnings = parseFloat(row[5]) || 0;
 
+                // Track optional evidence column (7th column, index 6)
+                if (row[6] && !sessionsByDate[date].evidenceUrl) {
+                    sessionsByDate[date].evidenceUrl = row[6];
+                }
+
                 const totalBuyin = cashBuyin + tourneyBuyin;
                 const totalWinnings = cashWinnings + tourneyWinnings;
                 const netProfit = totalWinnings - totalBuyin;
 
-                sessionsByDate[date].push({
+                sessionsByDate[date].players.push({
                     name: row[1],
                     cashBuyin,
                     tourneyBuyin,
@@ -228,7 +264,6 @@
                 });
             });
 
-            // Sort dates descending
             const sortedDates = Object.keys(sessionsByDate).sort((a, b) => new Date(b) - new Date(a));
             const container = document.getElementById('ledger');
             container.innerHTML = '';
@@ -240,16 +275,24 @@
 
             sortedDates.forEach((date, index) => {
                 const section = document.createElement('div');
-                section.className = `date-section ${index === 0 ? 'active' : ''}`; // Auto-expand first item
+                section.className = `date-section ${index === 0 ? 'active' : ''}`;
 
-                // Standardize display date layout
                 const displayDate = new Date(date).toLocaleDateString('en-US', {
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                 }) === 'Invalid Date' ? date : new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+                let evidenceMarkup = '';
+                if (sessionsByDate[date].evidenceUrl) {
+                    evidenceMarkup = `
+                        <div class="evidence-container">
+                            <span style="font-size:0.9rem; color:var(--text-muted);">🏛️ Session Audit:</span>
+                            <a href="${sessionsByDate[date].evidenceUrl}" target="_blank" class="btn-evidence">View Screenshot Evidence</a>
+                        </div>`;
+                }
+
                 section.innerHTML = `
                     <div class="date-header" onclick="toggleAccordion(this)">
-                        <span>🏛️ Session: ${displayDate}</span>
+                        <span>⚔️ Session: ${displayDate}</span>
                         <span class="arrow">▶</span>
                     </div>
                     <div class="date-content">
@@ -259,22 +302,3 @@
                                     <th>Gladiator Name</th>
                                     <th>Cash Buy-In</th>
                                     <th>Tourney Buy-In</th>
-                                    <th>Total Buy-In</th>
-                                    <th>Cash Winnings</th>
-                                    <th>Tourney Winnings</th>
-                                    <th>Total Winnings</th>
-                                    <th>Net Profit / Loss</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${sessionsByDate[date].map(player => {
-                                    const profitClass = player.netProfit > 0 ? 'profit' : (player.netProfit < 0 ? 'loss' : 'neutral');
-                                    const prefix = player.netProfit > 0 ? '+' : '';
-                                    return `
-                                        <tr>
-                                            <td><strong>${player.name}</strong></td>
-                                            <td class="amount">$${player.cashBuyin.toFixed(2)}</td>
-                                            <td class="amount">$${player.tourneyBuyin.toFixed(2)}</td>
-                                            <td class="amount"><strong>$${player.totalBuyin.toFixed(2)}</strong></td>
-                                            <td class="amount">$${player.cashWinnings.toFixed(2)}</td>
-                                            <td class="amount">$${player.tourneyWinnings.toFixed(2)}</td>
