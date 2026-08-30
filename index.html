@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludus of Kris - Poker Ledger</title>
+    <title>Ludus of Kris - Poker</title>
     <style>
         :root {
             --bg-color: #1a1613;
@@ -197,46 +197,49 @@
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
         <h1>Ludus of Kris</h1>
-        <div class="subtitle">Gladiatorial Poker Ledger</div>
+        <div class="subtitle">Gladiatorial Poker Standings</div>
     </header>
 
     <div class="accordion-container" id="ledger">
-        <div class="loading">Gathering scroll data from the Ludus school...</div>
+        <div class="loading">Gathering scroll data from the Ludus...</div>
     </div>
 
     <script>
         const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-
-        // POWERFUL PUBLIC EXPORT LINK FOR GID=0 (Guaranteed to dump clean text data)
-        const SHEET_URL = `https://google.com{SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/\${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
 
         async function fetchPokerData() {
             try {
                 const response = await fetch(SHEET_URL);
-                if (!response.ok) throw new Error('File download restriction error');
+                if (!response.ok) throw new Error('Network error fetching CSV');
                 const csvText = await response.text();
                 parseAndRenderData(csvText);
             } catch (error) {
                 document.getElementById('ledger').innerHTML = `
                     <div class="loading" style="color:var(--loss-red);">
-                        Connection error with the Google Drive link. Check permissions settings.
+                        Error communicating with Google Drive. Verify sharing link properties.
                     </div>`;
                 console.error(error);
             }
         }
 
+        function cleanNumericValue(input) {
+            if (input === undefined || input === null) return 0;
+            const strValue = String(input).replace(/[^0-9.-]/g, '');
+            const parsed = parseFloat(strValue);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
         function parseAndRenderData(csvData) {
-            // Split rows accurately while protecting nested text commas
             const rows = csvData.split(/\r?\n/).map(line => {
                 return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.replace(/^"|"$/g, '').trim());
             });
 
             if (rows.length < 2) {
-                document.getElementById('ledger').innerHTML = '<div class="loading">No arena records resolved in spreadsheet cells.</div>';
+                document.getElementById('ledger').innerHTML = '<div class="loading">No valid rows found in data layout.</div>';
                 return;
             }
 
-            // Normalizes headers for matching
             const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
             const dateIdx = headers.findIndex(h => h.includes('date'));
             const nameIdx = headers.findIndex(h => h.includes('name'));
@@ -250,16 +253,15 @@
 
             for (let i = 1; i < rows.length; i++) {
                 const currentLine = rows[i];
-                if (!currentLine || currentLine.length < 2 || !currentLine[dateIdx]) continue;
+                if (!currentLine || currentLine.length <= Math.max(dateIdx, nameIdx) || !currentLine[dateIdx]) continue;
 
                 const dateValue = currentLine[dateIdx];
                 const nameValue = currentLine[nameIdx] || "Unknown Gladiator";
 
-                // Maps inputs to data values directly using structural locations
-                const cBuy = parseFloat(currentLine[cashBuyIdx !== -1 ? cashBuyIdx : 2]) || 0;
-                const tBuy = parseFloat(currentLine[tourneyBuyIdx !== -1 ? tourneyBuyIdx : 3]) || 0;
-                const cWin = parseFloat(currentLine[cashWinIdx !== -1 ? cashWinIdx : 4]) || 0;
-                const tWin = parseFloat(currentLine[tourneyWinIdx !== -1 ? tourneyWinIdx : 5]) || 0;
+                const cBuy = cleanNumericValue(currentLine[cashBuyIdx]);
+                const tBuy = cleanNumericValue(currentLine[tourneyBuyIdx]);
+                const cWin = cleanNumericValue(currentLine[cashWinIdx]);
+                const tWin = cleanNumericValue(currentLine[tourneyWinIdx]);
                 const evidenceUrl = evidenceIdx !== -1 ? currentLine[evidenceIdx] : "";
 
                 if (!sessionsByDate[dateValue]) {
@@ -291,9 +293,84 @@
             container.innerHTML = '';
 
             if (sortedDates.length === 0) {
-                container.innerHTML = '<div class="loading">No valid log rows parsed. Check data alignment.</div>';
+                container.innerHTML = '<div class="loading">No valid log timelines parsed.</div>';
                 return;
             }
 
             sortedDates.forEach((date, index) => {
                 const section = document.createElement('div');
+                section.className = `date-section \${index === 0 ? 'active' : ''}`;
+
+                let displayDate = date;
+                try {
+                    const parsedDate = new Date(date + "T00:00:00");
+                    if (!isNaN(parsedDate)) {
+                        displayDate = parsedDate.toLocaleDateString('en-US', {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                    }
+                } catch(e) {}
+
+                let evidenceMarkup = '';
+                if (sessionsByDate[date].evidenceUrl) {
+                    evidenceMarkup = `
+                        <div class="evidence-container">
+                            <span style="font-size:0.9rem; color:var(--text-muted);">🏛️ Session Audit:</span>
+                            <a href="\${sessionsByDate[date].evidenceUrl}" target="_blank" class="btn-evidence">View Screenshot Evidence</a>
+                        </div>`;
+                }
+
+                section.innerHTML = `
+                    <div class="date-header" onclick="toggleAccordion(this)">
+                        <span>⚔️ Session: \${displayDate}</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="date-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Gladiator Name</th>
+                                    <th>Cash Buy-In</th>
+                                    <th>Tourney Buy-In</th>
+                                    <th>Total Buy-In</th>
+                                    <th>Cash Winnings</th>
+                                    <th>Tourney Winnings</th>
+                                    <th>Total Winnings</th>
+                                    <th>Net Profit / Loss</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                \${sessionsByDate[date].players.map(player => {
+                                    const profitClass = player.netProfit > 0 ? 'profit' : (player.netProfit < 0 ? 'loss' : 'neutral');
+                                    const prefix = player.netProfit > 0 ? '+' : '';
+                                    return `
+                                        <tr>
+                                            <td><strong>\${player.name}</strong></td>
+                                            <td class="amount">$\${player.cashBuyin.toFixed(2)}</td>
+                                            <td class="amount">$\${player.tourneyBuyin.toFixed(2)}</td>
+                                            <td class="amount"><strong>$\${player.totalBuyin.toFixed(2)}</strong></td>
+                                            <td class="amount">$\${player.cashWinnings.toFixed(2)}</td>
+                                            <td class="amount">$\${player.tourneyWinnings.toFixed(2)}</td>
+                                            <td class="amount"><strong>$\${player.totalWinnings.toFixed(2)}</strong></td>
+                                            <td class="amount \${profitClass}">\${prefix}$\${player.netProfit.toFixed(2)}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        \${evidenceMarkup}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+        }
+
+        function toggleAccordion(headerElement) {
+            const section = headerElement.parentElement;
+            section.classList.toggle('active');
+        }
+
+        fetchPokerData();
+    </script>
+</body>
+</html>
