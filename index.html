@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludus of Kris - Poker</title>
+    <title>Ludus of Kris - Poker Ledger</title>
     <style>
         :root {
             --bg-color: #1a1613;
-            --card-bg: #2a221d;
             --border-gold: #c5a059;
             --text-light: #f5efe6;
             --text-muted: #b5a499;
-            --profit-green: #4caf50;
-            --loss-red: #f44336;
         }
 
         body {
@@ -24,16 +21,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100vh;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .logo-container {
-            width: 180px;
-            height: 180px;
+            width: 150px;
+            height: 150px;
             margin: 0 auto 15px auto;
             border-radius: 50%;
             box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
@@ -63,130 +61,24 @@
             color: var(--text-muted);
             letter-spacing: 1px;
             text-transform: uppercase;
+            margin-bottom: 20px;
         }
 
-        .accordion-container {
+        .arena-frame-container {
             width: 100%;
-            max-width: 1000px;
-        }
-
-        .date-section {
-            background-color: var(--card-bg);
-            border: 1px solid #3d312a;
-            border-left: 4px solid var(--border-gold);
-            margin-bottom: 12px;
+            max-width: 1100px;
+            height: 65vh;
+            border: 2px solid var(--border-gold);
             border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            background-color: #ffffff; /* Keeps the excel grid perfectly readable */
             overflow: hidden;
         }
 
-        .date-header {
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            font-weight: bold;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            background: linear-gradient(to right, #2a221d, #362b24);
-        }
-
-        .date-header:hover {
-            background: #362b24;
-        }
-
-        .arrow {
-            transition: transform 0.2s ease;
-            color: var(--border-gold);
-            display: inline-block;
-        }
-
-        .date-content {
-            display: none;
-            padding: 0;
-            overflow-x: auto;
-            border-top: 1px solid #3d312a;
-        }
-
-        .date-section.active .date-content {
-            display: block;
-        }
-
-        .date-section.active .arrow {
-            transform: rotate(90deg);
-        }
-
-        table {
+        iframe {
             width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            min-width: 800px;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #3d312a;
-            font-size: 0.95rem;
-        }
-
-        th {
-            background-color: #231c18;
-            color: var(--border-gold);
-            font-family: 'Times New Roman', serif;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-        }
-
-        tr:hover {
-            background-color: #312822;
-        }
-
-        .amount {
-            font-family: monospace;
-            font-size: 1rem;
-        }
-
-        .profit { color: var(--profit-green); font-weight: bold; }
-        .loss { color: var(--loss-red); }
-        .neutral { color: var(--text-muted); }
-
-        .evidence-container {
-            padding: 15px 20px;
-            background-color: #201915;
-            border-top: 1px dashed #3d312a;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .btn-evidence {
-            background-color: transparent;
-            border: 1px solid var(--border-gold);
-            color: var(--border-gold);
-            padding: 6px 14px;
-            font-family: 'Times New Roman', serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            border-radius: 3px;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-evidence:hover {
-            background-color: var(--border-gold);
-            color: var(--bg-color);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--border-gold);
-            font-style: italic;
+            height: 100%;
+            border: none;
         }
     </style>
 </head>
@@ -197,180 +89,12 @@
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
         <h1>Ludus of Kris</h1>
-        <div class="subtitle">Gladiatorial Poker Standings</div>
+        <div class="subtitle">Gladiatorial Poker Ledger</div>
     </header>
 
-    <div class="accordion-container" id="ledger">
-        <div class="loading">Gathering scroll data from the Ludus...</div>
+    <div class="arena-frame-container">
+        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSDIibON5roY3ezG3RtD5mVPV50IN9Fj52wSwRQqwNK6Fvyyb49OY53ZZImAbVNgBW29-1qKLRid08L/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
     </div>
 
-    <script>
-        const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/\${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
-
-        async function fetchPokerData() {
-            try {
-                const response = await fetch(SHEET_URL);
-                if (!response.ok) throw new Error('Network error fetching CSV');
-                const csvText = await response.text();
-                parseAndRenderData(csvText);
-            } catch (error) {
-                document.getElementById('ledger').innerHTML = `
-                    <div class="loading" style="color:var(--loss-red);">
-                        Error communicating with Google Drive. Verify sharing link properties.
-                    </div>`;
-                console.error(error);
-            }
-        }
-
-        function cleanNumericValue(input) {
-            if (input === undefined || input === null) return 0;
-            const strValue = String(input).replace(/[^0-9.-]/g, '');
-            const parsed = parseFloat(strValue);
-            return isNaN(parsed) ? 0 : parsed;
-        }
-
-        function parseAndRenderData(csvData) {
-            const rows = csvData.split(/\r?\n/).map(line => {
-                return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.replace(/^"|"$/g, '').trim());
-            });
-
-            if (rows.length < 2) {
-                document.getElementById('ledger').innerHTML = '<div class="loading">No valid rows found in data layout.</div>';
-                return;
-            }
-
-            const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
-            const dateIdx = headers.findIndex(h => h.includes('date'));
-            const nameIdx = headers.findIndex(h => h.includes('name'));
-            const cashBuyIdx = headers.findIndex(h => h.includes('cashbuy'));
-            const tourneyBuyIdx = headers.findIndex(h => h.includes('tourneybuy'));
-            const cashWinIdx = headers.findIndex(h => h.includes('cashwin'));
-            const tourneyWinIdx = headers.findIndex(h => h.includes('tourneywin'));
-            const evidenceIdx = headers.findIndex(h => h.includes('evid'));
-
-            const sessionsByDate = {};
-
-            for (let i = 1; i < rows.length; i++) {
-                const currentLine = rows[i];
-                if (!currentLine || currentLine.length <= Math.max(dateIdx, nameIdx) || !currentLine[dateIdx]) continue;
-
-                const dateValue = currentLine[dateIdx];
-                const nameValue = currentLine[nameIdx] || "Unknown Gladiator";
-
-                const cBuy = cleanNumericValue(currentLine[cashBuyIdx]);
-                const tBuy = cleanNumericValue(currentLine[tourneyBuyIdx]);
-                const cWin = cleanNumericValue(currentLine[cashWinIdx]);
-                const tWin = cleanNumericValue(currentLine[tourneyWinIdx]);
-                const evidenceUrl = evidenceIdx !== -1 ? currentLine[evidenceIdx] : "";
-
-                if (!sessionsByDate[dateValue]) {
-                    sessionsByDate[dateValue] = { players: [], evidenceUrl: "" };
-                }
-
-                if (evidenceUrl && !sessionsByDate[dateValue].evidenceUrl) {
-                    sessionsByDate[dateValue].evidenceUrl = evidenceUrl;
-                }
-
-                const totalBuyin = cBuy + tBuy;
-                const totalWinnings = cWin + tWin;
-                const netProfit = totalWinnings - totalBuyin;
-
-                sessionsByDate[dateValue].players.push({
-                    name: nameValue,
-                    cashBuyin: cBuy,
-                    tourneyBuyin: tBuy,
-                    totalBuyin: totalBuyin,
-                    cashWinnings: cWin,
-                    tourneyWinnings: tWin,
-                    totalWinnings: totalWinnings,
-                    netProfit: netProfit
-                });
-            }
-
-            const sortedDates = Object.keys(sessionsByDate).sort((a, b) => new Date(b) - new Date(a));
-            const container = document.getElementById('ledger');
-            container.innerHTML = '';
-
-            if (sortedDates.length === 0) {
-                container.innerHTML = '<div class="loading">No valid log timelines parsed.</div>';
-                return;
-            }
-
-            sortedDates.forEach((date, index) => {
-                const section = document.createElement('div');
-                section.className = `date-section \${index === 0 ? 'active' : ''}`;
-
-                let displayDate = date;
-                try {
-                    const parsedDate = new Date(date + "T00:00:00");
-                    if (!isNaN(parsedDate)) {
-                        displayDate = parsedDate.toLocaleDateString('en-US', {
-                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                        });
-                    }
-                } catch(e) {}
-
-                let evidenceMarkup = '';
-                if (sessionsByDate[date].evidenceUrl) {
-                    evidenceMarkup = `
-                        <div class="evidence-container">
-                            <span style="font-size:0.9rem; color:var(--text-muted);">🏛️ Session Audit:</span>
-                            <a href="\${sessionsByDate[date].evidenceUrl}" target="_blank" class="btn-evidence">View Screenshot Evidence</a>
-                        </div>`;
-                }
-
-                section.innerHTML = `
-                    <div class="date-header" onclick="toggleAccordion(this)">
-                        <span>⚔️ Session: \${displayDate}</span>
-                        <span class="arrow">▶</span>
-                    </div>
-                    <div class="date-content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Gladiator Name</th>
-                                    <th>Cash Buy-In</th>
-                                    <th>Tourney Buy-In</th>
-                                    <th>Total Buy-In</th>
-                                    <th>Cash Winnings</th>
-                                    <th>Tourney Winnings</th>
-                                    <th>Total Winnings</th>
-                                    <th>Net Profit / Loss</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                \${sessionsByDate[date].players.map(player => {
-                                    const profitClass = player.netProfit > 0 ? 'profit' : (player.netProfit < 0 ? 'loss' : 'neutral');
-                                    const prefix = player.netProfit > 0 ? '+' : '';
-                                    return `
-                                        <tr>
-                                            <td><strong>\${player.name}</strong></td>
-                                            <td class="amount">$\${player.cashBuyin.toFixed(2)}</td>
-                                            <td class="amount">$\${player.tourneyBuyin.toFixed(2)}</td>
-                                            <td class="amount"><strong>$\${player.totalBuyin.toFixed(2)}</strong></td>
-                                            <td class="amount">$\${player.cashWinnings.toFixed(2)}</td>
-                                            <td class="amount">$\${player.tourneyWinnings.toFixed(2)}</td>
-                                            <td class="amount"><strong>$\${player.totalWinnings.toFixed(2)}</strong></td>
-                                            <td class="amount \${profitClass}">\${prefix}$\${player.netProfit.toFixed(2)}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                        \${evidenceMarkup}
-                    </div>
-                `;
-                container.appendChild(section);
-            });
-        }
-
-        function toggleAccordion(headerElement) {
-            const section = headerElement.parentElement;
-            section.classList.toggle('active');
-        }
-
-        fetchPokerData();
-    </script>
 </body>
 </html>
