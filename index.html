@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludus of Kris - Poker Lanista</title>
+    <title>Ludus of Kris - Poker Ledger</title>
     <style>
         :root {
             --bg-color: #1a1613;
@@ -197,52 +197,54 @@
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
         <h1>Ludus of Kris</h1>
-        <div class="subtitle">Gladiatorial Poker School</div>
+        <div class="subtitle">Gladiatorial Poker Ledger</div>
     </header>
 
     <div class="accordion-container" id="ledger">
-        <div class="loading">Gathering scroll data from the Ludus...</div>
+        <div class="loading">Gathering scroll data from the Ludus school...</div>
     </div>
 
     <script>
         const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-        const SHEET_URL = `https://google.com{SHEET_ID}/export?format=csv&gid=0`;
+
+        // POWERFUL PUBLIC EXPORT LINK FOR GID=0 (Guaranteed to dump clean text data)
+        const SHEET_URL = `https://google.com{SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
 
         async function fetchPokerData() {
             try {
                 const response = await fetch(SHEET_URL);
-                if (!response.ok) throw new Error('File access error');
+                if (!response.ok) throw new Error('File download restriction error');
                 const csvText = await response.text();
                 parseAndRenderData(csvText);
             } catch (error) {
                 document.getElementById('ledger').innerHTML = `
                     <div class="loading" style="color:var(--loss-red);">
-                        Error accessing records. Check console log metrics.
+                        Connection error with the Google Drive link. Check permissions settings.
                     </div>`;
                 console.error(error);
             }
         }
 
         function parseAndRenderData(csvData) {
-            // Split lines safely accounting for commas within quoted boundaries
+            // Split rows accurately while protecting nested text commas
             const rows = csvData.split(/\r?\n/).map(line => {
                 return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.replace(/^"|"$/g, '').trim());
             });
 
             if (rows.length < 2) {
-                document.getElementById('ledger').innerHTML = '<div class="loading">No arena records found.</div>';
+                document.getElementById('ledger').innerHTML = '<div class="loading">No arena records resolved in spreadsheet cells.</div>';
                 return;
             }
 
-            // Simple header index identifier targeting exact cell phrases
+            // Normalizes headers for matching
             const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
             const dateIdx = headers.findIndex(h => h.includes('date'));
             const nameIdx = headers.findIndex(h => h.includes('name'));
             const cashBuyIdx = headers.findIndex(h => h.includes('cashbuy'));
-            const tourneyBuyIdx = headers.findIndex(h => h.includes('tourneybuy') || h.includes('tournby'));
+            const tourneyBuyIdx = headers.findIndex(h => h.includes('tourneybuy'));
             const cashWinIdx = headers.findIndex(h => h.includes('cashwin'));
-            const tourneyWinIdx = headers.findIndex(h => h.includes('tourneywin') || h.includes('tournwn'));
-            const evidenceIdx = headers.findIndex(h => h.includes('evid') || h.includes('proof') || h.includes('screenshot'));
+            const tourneyWinIdx = headers.findIndex(h => h.includes('tourneywin'));
+            const evidenceIdx = headers.findIndex(h => h.includes('evid'));
 
             const sessionsByDate = {};
 
@@ -253,7 +255,7 @@
                 const dateValue = currentLine[dateIdx];
                 const nameValue = currentLine[nameIdx] || "Unknown Gladiator";
 
-                // Read matched index mappings, default to direct indices 2,3,4,5 if columns break
+                // Maps inputs to data values directly using structural locations
                 const cBuy = parseFloat(currentLine[cashBuyIdx !== -1 ? cashBuyIdx : 2]) || 0;
                 const tBuy = parseFloat(currentLine[tourneyBuyIdx !== -1 ? tourneyBuyIdx : 3]) || 0;
                 const cWin = parseFloat(currentLine[cashWinIdx !== -1 ? cashWinIdx : 4]) || 0;
@@ -289,11 +291,9 @@
             container.innerHTML = '';
 
             if (sortedDates.length === 0) {
-                container.innerHTML = '<div class="loading">No structural log records resolved.</div>';
+                container.innerHTML = '<div class="loading">No valid log rows parsed. Check data alignment.</div>';
                 return;
             }
 
             sortedDates.forEach((date, index) => {
                 const section = document.createElement('div');
-                section.className = `date-section ${index === 0 ? 'active' : ''}`;
-
