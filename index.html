@@ -197,7 +197,7 @@
             <img src="logo.png" alt="Ludus of Kris Logo">
         </div>
         <h1>Ludus of Kris</h1>
-        <div class="subtitle">Gladiatorial Poker Ledger</div>
+        <div class="subtitle">Gladiatorial Poker Standings</div>
     </header>
 
     <div class="accordion-container" id="ledger">
@@ -207,8 +207,6 @@
     <script>
         // Target Sheet ID
         const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-
-        // NEW BULLETPROOF EXPORT LINK FORMAT (Bypasses visualization API restrictions)
         const SHEET_URL = `https://google.com{SHEET_ID}/export?format=csv&gid=0`;
 
         async function fetchPokerData() {
@@ -220,85 +218,82 @@
             } catch (error) {
                 document.getElementById('ledger').innerHTML = `
                     <div class="loading" style="color:var(--loss-red);">
-                        Error accessing records. Verify that "Anyone with the link can view" option is fully active on Google Drive.
+                        Error accessing records. Verify that "Anyone with the link can view" option is active.
                     </div>`;
                 console.error(error);
             }
         }
 
         function parseAndRenderData(csvData) {
-            const lines = csvData.split(/\r?\n/).map(line => {
+            // Smart safe line parsing
+            const rows = csvData.split(/\r?\n/).map(line => {
                 return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.replace(/^"|"$/g, '').trim());
             });
 
-            const dataRows = lines.slice(1).filter(row => row.length >= 6 && row[0] !== "");
+            if (rows.length < 2) {
+                document.getElementById('ledger').innerHTML = '<div class="loading">No arena records found. Add columns in your sheet.</div>';
+                return;
+            }
+
+            // Read the real headers to prevent data column indexing drift
+            const headers = rows[0].map(h => h.toLowerCase());
+            const dateIdx = headers.findIndex(h => h.includes('date'));
+            const nameIdx = headers.findIndex(h => h.includes('name'));
+            const cashBuyIdx = headers.findIndex(h => h.includes('cash buy'));
+            const tourneyBuyIdx = headers.findIndex(h => h.includes('tourn'));
+            const cashWinIdx = headers.findIndex(h => h.includes('cash win'));
+            const tourneyWinIdx = headers.findIndex(h => h.includes('tourn') && h.includes('win'));
+            const evidenceIdx = headers.findIndex(h => h.includes('evid') || h.includes('proof') || h.includes('screenshot'));
 
             const sessionsByDate = {};
-            dataRows.forEach(row => {
-                const date = row[0];
-                if (!sessionsByDate[date]) sessionsByDate[date] = { players: [], evidenceUrl: "" };
 
-                const cashBuyin = parseFloat(row[2]) || 0;
-                const tourneyBuyin = parseFloat(row[3]) || 0;
-                const cashWinnings = parseFloat(row[4]) || 0;
-                const tourneyWinnings = parseFloat(row[5]) || 0;
+            // Cycle data lines safely
+            for (let i = 1; i < rows.length; i++) {
+                const currentLine = rows[i];
+                if (!currentLine || currentLine.length === 0 || !currentLine[dateIdx]) continue;
 
-                // Track optional evidence column (7th column, index 6)
-                if (row[6] && !sessionsByDate[date].evidenceUrl) {
-                    sessionsByDate[date].evidenceUrl = row[6];
+                const dateValue = currentLine[dateIdx];
+                const nameValue = currentLine[nameIdx] || "Unknown Gladiator";
+
+                // Fallback to absolute positional indexes if custom name headers match poorly
+                const cBuy = parseFloat(currentLine[cashBuyIdx !== -1 ? cashBuyIdx : 2]) || 0;
+                const tBuy = parseFloat(currentLine[tourneyBuyIdx !== -1 ? tourneyBuyIdx : 3]) || 0;
+                const cWin = parseFloat(currentLine[cashWinIdx !== -1 ? cashWinIdx : 4]) || 0;
+                const tWin = parseFloat(currentLine[tourneyWinIdx !== -1 ? tourneyWinIdx : 5]) || 0;
+                const evidenceUrl = evidenceIdx !== -1 ? currentLine[evidenceIdx] : "";
+
+                if (!sessionsByDate[dateValue]) {
+                    sessionsByDate[dateValue] = { players: [], evidenceUrl: "" };
                 }
 
-                const totalBuyin = cashBuyin + tourneyBuyin;
-                const totalWinnings = cashWinnings + tourneyWinnings;
+                if (evidenceUrl && !sessionsByDate[dateValue].evidenceUrl) {
+                    sessionsByDate[dateValue].evidenceUrl = evidenceUrl;
+                }
+
+                const totalBuyin = cBuy + tBuy;
+                const totalWinnings = cWin + tWin;
                 const netProfit = totalWinnings - totalBuyin;
 
-                sessionsByDate[date].players.push({
-                    name: row[1],
-                    cashBuyin,
-                    tourneyBuyin,
-                    totalBuyin,
-                    cashWinnings,
-                    tourneyWinnings,
-                    totalWinnings,
-                    netProfit
+                sessionsByDate[dateValue].players.push({
+                    name: nameValue,
+                    cashBuyin: cBuy,
+                    tourneyBuyin: tBuy,
+                    totalBuyin: totalBuyin,
+                    cashWinnings: cWin,
+                    tourneyWinnings: tWin,
+                    totalWinnings: totalWinnings,
+                    netProfit: netProfit
                 });
-            });
+            }
 
             const sortedDates = Object.keys(sessionsByDate).sort((a, b) => new Date(b) - new Date(a));
             const container = document.getElementById('ledger');
             container.innerHTML = '';
 
             if (sortedDates.length === 0) {
-                container.innerHTML = '<div class="loading">No arena records found.</div>';
+                container.innerHTML = '<div class="loading">No arena records found. Add entry data into rows.</div>';
                 return;
             }
 
             sortedDates.forEach((date, index) => {
                 const section = document.createElement('div');
-                section.className = `date-section ${index === 0 ? 'active' : ''}`;
-
-                const displayDate = new Date(date).toLocaleDateString('en-US', {
-                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                }) === 'Invalid Date' ? date : new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-                let evidenceMarkup = '';
-                if (sessionsByDate[date].evidenceUrl) {
-                    evidenceMarkup = `
-                        <div class="evidence-container">
-                            <span style="font-size:0.9rem; color:var(--text-muted);">🏛️ Session Audit:</span>
-                            <a href="${sessionsByDate[date].evidenceUrl}" target="_blank" class="btn-evidence">View Screenshot Evidence</a>
-                        </div>`;
-                }
-
-                section.innerHTML = `
-                    <div class="date-header" onclick="toggleAccordion(this)">
-                        <span>⚔️ Session: ${displayDate}</span>
-                        <span class="arrow">▶</span>
-                    </div>
-                    <div class="date-content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Gladiator Name</th>
-                                    <th>Cash Buy-In</th>
-                                    <th>Tourney Buy-In</th>
