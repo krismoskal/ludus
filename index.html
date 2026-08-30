@@ -7,9 +7,12 @@
     <style>
         :root {
             --bg-color: #1a1613;
+            --card-bg: #2a221d;
             --border-gold: #c5a059;
             --text-light: #f5efe6;
             --text-muted: #b5a499;
+            --profit-green: #4caf50;
+            --loss-red: #f44336;
         }
 
         body {
@@ -21,12 +24,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
         }
 
         header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .logo-container {
@@ -61,24 +63,256 @@
             color: var(--text-muted);
             letter-spacing: 1px;
             text-transform: uppercase;
+        }
+
+        /* Leaderboard Segment Styles */
+        .leaderboard-section {
+            width: 100%;
+            max-width: 1000px;
+            background-color: var(--card-bg);
+            border: 1px solid #3d312a;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .section-title {
+            font-family: 'Times New Roman', serif;
+            color: var(--border-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1.3rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px dashed #3d312a;
+            padding-bottom: 10px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 20px;
         }
 
-        .arena-frame-container {
-            width: 100%;
-            max-width: 1100px;
-            height: 65vh;
-            border: 2px solid var(--border-gold);
+        .btn-filter {
+            background-color: #1e1915;
+            border: 1px solid #4a3b32;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            font-family: 'Times New Roman', serif;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            cursor: pointer;
             border-radius: 4px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-            background-color: #ffffff; /* Keeps the excel grid perfectly readable */
+            transition: all 0.2s ease;
+        }
+
+        .btn-filter:hover {
+            border-color: var(--border-gold);
+            color: var(--text-light);
+        }
+
+        .btn-filter.active {
+            background-color: var(--border-gold);
+            color: var(--bg-color);
+            border-color: var(--border-gold);
+            font-weight: bold;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background-color: #211a15;
+            border: 1px solid #362c24;
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(4px);
+            background-color: #28201a;
+        }
+
+        .leaderboard-item.champion {
+            border: 1px solid var(--border-gold);
+            background: linear-gradient(to right, #2d231b, #3d3024);
+            box-shadow: 0 0 10px rgba(197, 160, 89, 0.15);
+        }
+
+        .gladiator-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .rank-number {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            width: 25px;
+        }
+
+        .champion .rank-number {
+            color: var(--border-gold);
+        }
+
+        .gladiator-badge {
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gladiator-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .champion .gladiator-name {
+            color: var(--border-gold);
+            font-size: 1.2rem;
+        }
+
+        .gladiator-stats {
+            text-align: right;
+        }
+
+        /* Accordion Timeline Styles */
+        .accordion-container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .date-section {
+            background-color: var(--card-bg);
+            border: 1px solid #3d312a;
+            border-left: 4px solid var(--border-gold);
+            margin-bottom: 12px;
+            border-radius: 4px;
             overflow: hidden;
         }
 
-        iframe {
+        .date-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #2a221d, #362b24);
+        }
+
+        .date-header:hover {
+            background: #362b24;
+        }
+
+        .arrow {
+            transition: transform 0.2s ease;
+            color: var(--border-gold);
+            display: inline-block;
+        }
+
+        .date-content {
+            display: none;
+            padding: 0;
+            overflow-x: auto;
+            border-top: 1px solid #3d312a;
+        }
+
+        .date-section.active .date-content {
+            display: block;
+        }
+
+        .date-section.active .arrow {
+            transform: rotate(90deg);
+        }
+
+        table {
             width: 100%;
-            height: 100%;
-            border: none;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #3d312a;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: #231c18;
+            color: var(--border-gold);
+            font-family: 'Times New Roman', serif;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        tr:hover {
+            background-color: #312822;
+        }
+
+        .amount {
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .profit { color: var(--profit-green); font-weight: bold; }
+        .loss { color: var(--loss-red); }
+        .neutral { color: var(--text-muted); }
+
+        .evidence-container {
+            padding: 15px 20px;
+            background-color: #201915;
+            border-top: 1px dashed #3d312a;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-evidence {
+            background-color: transparent;
+            border: 1px solid var(--border-gold);
+            color: var(--border-gold);
+            padding: 6px 14px;
+            font-family: 'Times New Roman', serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-evidence:hover {
+            background-color: var(--border-gold);
+            color: var(--bg-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--border-gold);
+            font-style: italic;
         }
     </style>
 </head>
@@ -92,9 +326,291 @@
         <div class="subtitle">Gladiatorial Poker Ledger</div>
     </header>
 
-    <div class="arena-frame-container">
-        <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSDIibON5roY3ezG3RtD5mVPV50IN9Fj52wSwRQqwNK6Fvyyb49OY53ZZImAbVNgBW29-1qKLRid08L/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
+    <!-- Interactive Gladiatorial Leaderboard -->
+    <div class="leaderboard-section">
+        <div class="section-title">Arena Standings</div>
+        <div class="filter-buttons">
+            <button class="btn-filter active" onclick="switchFilter('month')">This Month</button>
+            <button class="btn-filter" onclick="switchFilter('year')">This Year</button>
+            <button class="btn-filter" onclick="switchFilter('lastYear')">Last Year</button>
+        </div>
+        <div class="leaderboard-list" id="leaderboard-content">
+            <div class="loading">Evaluating arena champions...</div>
+        </div>
     </div>
 
+    <!-- History Accordion Timeline -->
+    <div class="accordion-container">
+        <div class="section-title">Battle Ledger Timeline</div>
+        <div id="ledger">
+            <div class="loading">Gathering scroll data from the Ludus...</div>
+        </div>
+    </div>
+
+    <script>
+        const SHEET_ID = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=0`;
+
+        let globalSessions = {};
+        let currentFilter = 'month';
+
+        async function fetchPokerData() {
+            try {
+                const response = await fetch(SHEET_URL);
+                if (!response.ok) throw new Error('Network error fetching CSV');
+                const csvText = await response.text();
+                parseData(csvText);
+            } catch (error) {
+                const errMsg = `<div class="loading" style="color:var(--loss-red);">Error communicating with Google Drive. Verify sharing link properties.</div>`;
+                document.getElementById('ledger').innerHTML = errMsg;
+                document.getElementById('leaderboard-content').innerHTML = errMsg;
+                console.error(error);
+            }
+        }
+
+        function cleanNumericValue(input) {
+            if (input === undefined || input === null) return 0;
+            const strValue = String(input).replace(/[^0-9.-]/g, '');
+            const parsed = parseFloat(strValue);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
+        function parseData(csvData) {
+            const rows = csvData.split(/?
+/).map(line => {
+                return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.replace(/^"|"$/g, '').trim());
+            });
+
+            if (rows.length < 2) {
+                const emptyMsg = '<div class="loading">No valid rows found in data layout.</div>';
+                document.getElementById('ledger').innerHTML = emptyMsg;
+                document.getElementById('leaderboard-content').innerHTML = emptyMsg;
+                return;
+            }
+
+            const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, ''));
+            const dateIdx = headers.findIndex(h => h.includes('date'));
+            const nameIdx = headers.findIndex(h => h.includes('name'));
+            const cashBuyIdx = headers.findIndex(h => h.includes('cashbuy'));
+            const tourneyBuyIdx = headers.findIndex(h => h.includes('tourneybuy'));
+            const cashWinIdx = headers.findIndex(h => h.includes('cashwin'));
+            const tourneyWinIdx = headers.findIndex(h => h.includes('tourneywin'));
+            const evidenceIdx = headers.findIndex(h => h.includes('evid'));
+
+            globalSessions = {};
+
+            for (let i = 1; i < rows.length; i++) {
+                const currentLine = rows[i];
+                if (!currentLine || currentLine.length <= Math.max(dateIdx, nameIdx) || !currentLine[dateIdx]) continue;
+
+                const dateValue = currentLine[dateIdx];
+                const nameValue = currentLine[nameIdx] || "Unknown Gladiator";
+                
+                const cBuy = cleanNumericValue(currentLine[cashBuyIdx]);
+                const tBuy = cleanNumericValue(currentLine[tourneyBuyIdx]);
+                const cWin = cleanNumericValue(currentLine[cashWinIdx]);
+                const tWin = cleanNumericValue(currentLine[tourneyWinIdx]);
+                const evidenceUrl = evidenceIdx !== -1 ? currentLine[evidenceIdx] : "";
+
+                if (!globalSessions[dateValue]) {
+                    globalSessions[dateValue] = { players: [], evidenceUrl: "" };
+                }
+                
+                if (evidenceUrl && !globalSessions[dateValue].evidenceUrl) {
+                    globalSessions[dateValue].evidenceUrl = evidenceUrl;
+                }
+
+                const totalBuyin = cBuy + tBuy;
+                const totalWinnings = cWin + tWin;
+                const netProfit = totalWinnings - totalBuyin;
+
+                globalSessions[dateValue].players.push({
+                    name: nameValue,
+                    cashBuyin: cBuy,
+                    tourneyBuyin: tBuy,
+                    totalBuyin: totalBuyin,
+                    cashWinnings: cWin,
+                    tourneyWinnings: tWin,
+                    totalWinnings: totalWinnings,
+                    netProfit: netProfit
+                });
+            }
+
+            renderTimeline();
+            calculateAndRenderLeaderboard();
+        }
+
+        function renderTimeline() {
+            const sortedDates = Object.keys(globalSessions).sort((a, b) => new Date(b) - new Date(a));
+            const container = document.getElementById('ledger');
+            container.innerHTML = '';
+
+            if (sortedDates.length === 0) {
+                container.innerHTML = '<div class="loading">No valid log timelines parsed.</div>';
+                return;
+            }
+
+            sortedDates.forEach((date, index) => {
+                const section = document.createElement('div');
+                section.className = `date-section ${index === 0 ? 'active' : ''}`;
+
+                let displayDate = date;
+                try {
+                    const parsedDate = new Date(date + "T00:00:00");
+                    if (!isNaN(parsedDate)) {
+                        displayDate = parsedDate.toLocaleDateString('en-US', {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                    }
+                } catch(e) {}
+
+                let evidenceMarkup = '';
+                if (globalSessions[date].evidenceUrl) {
+                    evidenceMarkup = `
+                        <div class="evidence-container">
+                            <span style="font-size:0.9rem; color:var(--text-muted);">🏛️ Session Audit:</span>
+                            <a href="${globalSessions[date].evidenceUrl}" target="_blank" class="btn-evidence">View Screenshot Evidence</a>
+                        </div>`;
+                }
+
+                section.innerHTML = `
+                    <div class="date-header" onclick="toggleAccordion(this)">
+                        <span>⚔️ Session: ${displayDate}</span>
+                        <span class="arrow">▶</span>
+                    </div>
+                    <div class="date-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Gladiator Name</th>
+                                    <th>Cash Buy-In</th>
+                                    <th>Tourney Buy-In</th>
+                                    <th>Total Buy-In</th>
+                                    <th>Cash Winnings</th>
+                                    <th>Tourney Winnings</th>
+                                    <th>Total Winnings</th>
+                                    <th>Net Profit / Loss</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${globalSessions[date].players.map(player => {
+                                    const profitClass = player.netProfit > 0 ? 'profit' : (player.netProfit < 0 ? 'loss' : 'neutral');
+                                    const prefix = player.netProfit > 0 ? '+' : '';
+                                    return `
+                                        <tr>
+                                            <td><strong>${player.name}</strong></td>
+                                            <td class="amount">$${player.cashBuyin.toFixed(2)}</td>
+                                            <td class="amount">$${player.tourneyBuyin.toFixed(2)}</td>
+                                            <td class="amount"><strong>$${player.totalBuyin.toFixed(2)}</strong></td>
+                                            <td class="amount">$${player.cashWinnings.toFixed(2)}</td>
+                                            <td class="amount">$${player.tourneyWinnings.toFixed(2)}</td>
+                                            <td class="amount"><strong>$${player.totalWinnings.toFixed(2)}</strong></td>
+                                            <td class="amount ${profitClass}">${prefix}$${player.netProfit.toFixed(2)}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        ${evidenceMarkup}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+        }
+
+        function calculateAndRenderLeaderboard() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth(); // 0-11
+
+            const playerTotals = {};
+
+            Object.keys(globalSessions).forEach(dateStr => {
+                const sDate = new Date(dateStr + "T00:00:00");
+                const sYear = sDate.getFullYear();
+                const sMonth = sDate.getMonth();
+
+                // Filter logic
+                let include = false;
+                if (currentFilter === 'month') {
+                    if (sYear === currentYear && sMonth === currentMonth) include = true;
+                } else if (currentFilter === 'year') {
+                    if (sYear === currentYear) include = true;
+                } else if (currentFilter === 'lastYear') {
+                    if (sYear === currentYear - 1) include = true;
+                }
+
+                if (include) {
+                    globalSessions[dateStr].players.forEach(p => {
+                        if (!playerTotals[p.name]) {
+                            playerTotals[p.name] = 0;
+                        }
+                        playerTotals[p.name] += p.netProfit;
+                    });
+                }
+            });
+
+            // Convert to array and sort descending by profit
+            const rankings = Object.keys(playerTotals).map(name => {
+                return { name: name, profit: playerTotals[name] };
+            }).sort((a, b) => b.profit - a.profit);
+
+            const container = document.getElementById('leaderboard-content');
+            container.innerHTML = '';
+
+            if (rankings.length === 0) {
+                container.innerHTML = '<div class="loading">No battle data matches this timeframe timeline.</div>';
+                return;
+            }
+
+            rankings.forEach((player, index) => {
+                const isChampion = index === 0;
+                const item = document.createElement('div');
+                item.className = `leaderboard-item ${isChampion ? 'champion' : ''}`;
+
+                // Custom gladiatorial icon assignment rules
+                const badgeSymbol = isChampion ? '👑' : '🛡️';
+                const gladiatorTitle = isChampion ? 'Strongest Gladiator' : 'Rookie Gladiator';
+                const profitClass = player.profit > 0 ? 'profit' : (player.profit < 0 ? 'loss' : 'neutral');
+                const prefix = player.profit > 0 ? '+' : '';
+
+                item.innerHTML = `
+                    <div class="gladiator-profile">
+                        <div class="rank-number">#${index + 1}</div>
+                        <div class="gladiator-badge" title="${gladiatorTitle}">${badgeSymbol}</div>
+                        <div>
+                            <div class="gladiator-name">${player.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">${gladiatorTitle}</div>
+                        </div>
+                    </div>
+                    <div class="gladiator-stats">
+                        <div class="amount ${profitClass}">${prefix}$${player.profit.toFixed(2)}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function switchFilter(filterType) {
+            currentFilter = filterType;
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            
+            // Assign visual button focus mappings explicitly
+            let activeBtn;
+            if(filterType === 'month') activeBtn = 0;
+            else if(filterType === 'year') activeBtn = 1;
+            else activeBtn = 2;
+            
+            document.querySelectorAll('.btn-filter')[activeBtn].classList.add('active');
+            calculateAndRenderLeaderboard();
+        }
+
+        function toggleAccordion(headerElement) {
+            const section = headerElement.parentElement;
+            section.classList.toggle('active');
+        }
+
+        fetchPokerData();
+    </script>
 </body>
 </html>
