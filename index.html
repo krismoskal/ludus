@@ -24,11 +24,40 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
+        }
+
+        /* Top-Right Ledger Seal */
+        .header-seal {
+            position: absolute;
+            top: 24px;
+            right: 28px;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .seal-epoch {
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gold-dim);
+        }
+
+        .seal-dominus {
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
         header {
             text-align: center;
             margin-bottom: 20px;
+            margin-top: 10px;
         }
 
         .logo-container {
@@ -60,12 +89,6 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
         }
 
-        .subtitle {
-            color: var(--text-dim);
-            font-style: italic;
-            margin-bottom: 10px;
-        }
-
         /* Filter Controls */
         .filter-wrapper {
             display: flex;
@@ -75,13 +98,6 @@
             margin-bottom: 30px;
             width: 100%;
             max-width: 900px;
-        }
-
-        .filter-label {
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--gold-dim);
         }
 
         .range-selector {
@@ -320,9 +336,23 @@
             font-style: italic;
             padding: 20px;
         }
+
+        @media (max-width: 768px) {
+            .header-seal {
+                position: static;
+                text-align: center;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Upper Right Header Seal -->
+    <div class="header-seal">
+        <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
+        <span class="seal-dominus">Dominus Kris</span>
+    </div>
 
     <header>
         <div class="logo-container">
@@ -333,8 +363,6 @@
             </svg>
         </div>
         <h1>Ludus Magnus</h1>
-        <div class="subtitle">Poker Gladiator School • Circa 2026 AD</div>
-        <div class="subtitle">Dominus Kris</div>
     </header>
 
     <div class="filter-wrapper">
