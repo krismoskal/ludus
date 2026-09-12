@@ -217,6 +217,11 @@
             color: var(--text-light);
         }
 
+        .unplayed {
+            color: #554433;
+            font-style: italic;
+        }
+
         .podium-container {
             display: flex;
             flex-direction: column;
@@ -276,6 +281,7 @@
             font-size: 1.25rem;
             font-weight: bold;
             margin: 0;
+            text-transform: capitalize;
         }
 
         .gladiator-status {
@@ -395,7 +401,8 @@
         }
 
         const sheetId = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+        // Specify sheet gid or export base
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
 
         let allRecords = [];
         let colIndices = {};
@@ -424,12 +431,11 @@
             const lines = text.split('\n');
             return lines.map(line => {
                 return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
-            }).filter(line => line.length > 1 && line !== "");
+            });
         }
 
         function initApp(dataRows) {
-            const headers = dataRows[0].map(h => h.toUpperCase());
-            allRecords = dataRows.slice(1);
+            const headers = dataRows[0].map(h => h.trim().toUpperCase());
 
             colIndices = {
                 date: headers.indexOf('DATE'),
@@ -440,6 +446,13 @@
                 tourneyWin: headers.indexOf('TOURNEY WINNINGS'),
                 evidence: headers.indexOf('EVIDENCE')
             };
+
+            // Filter out empty rows, blank lines, or rows without player name/date
+            allRecords = dataRows.slice(1).filter(row => {
+                const hasDate = colIndices.date !== -1 && row[colIndices.date] && row[colIndices.date].trim() !== '';
+                const hasName = colIndices.name !== -1 && row[colIndices.name] && row[colIndices.name].trim() !== '';
+                return hasDate && hasName;
+            });
 
             const buttons = document.querySelectorAll('.range-btn');
             buttons.forEach(btn => {
@@ -456,7 +469,7 @@
 
         function parseRecordDate(dateStr) {
             if (!dateStr) return null;
-            const parts = dateStr.split(/[-/]/);
+            const parts = dateStr.trim().split(/[-/]/);
             if (parts.length === 3) {
                 if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
                 return new Date(parts[2], parts[0] - 1, parts[1]);
@@ -494,10 +507,17 @@
             renderLedger(filtered);
         }
 
+        function formatVal(cell) {
+            if (cell === undefined || cell === null || cell.trim() === '') {
+                return '<span class="unplayed">—</span>';
+            }
+            return cell;
+        }
+
         function renderStandings(records) {
             const groups = {};
             records.forEach(row => {
-                const date = row[colIndices.date] || 'Unknown Date';
+                const date = row[colIndices.date] ? row[colIndices.date].trim() : 'Unknown Date';
                 if (!groups[date]) groups[date] = [];
                 groups[date].push(row);
             });
@@ -520,8 +540,8 @@
                                     <tr>
                                         <th>Player</th>
                                         <th>Cash Buyin</th>
-                                        <th>Tourney Buyin</th>
                                         <th>Cash Win</th>
+                                        <th>Tourney Buyin</th>
                                         <th>Tourney Win</th>
                                         <th>Evidence</th>
                                     </tr>
@@ -532,12 +552,12 @@
                 groups[date].forEach(row => {
                     standingsHtml += `
                         <tr>
-                            <td><strong>${row[colIndices.name] || '-'}</strong></td>
-                            <td>${row[colIndices.cashBuy] || '0'}</td>
-                            <td>${row[colIndices.tourneyBuy] || '0'}</td>
-                            <td>${row[colIndices.cashWin] || '0'}</td>
-                            <td>${row[colIndices.tourneyWin] || '0'}</td>
-                            <td>${row[colIndices.evidence] ? `<a href="${row[colIndices.evidence]}" target="_blank" style="color:#d4af37;">Link</a>` : '-'}</td>
+                            <td><strong style="text-transform: capitalize;">${row[colIndices.name] || '-'}</strong></td>
+                            <td>${formatVal(row[colIndices.cashBuy])}</td>
+                            <td>${formatVal(row[colIndices.cashWin])}</td>
+                            <td>${formatVal(row[colIndices.tourneyBuy])}</td>
+                            <td>${formatVal(row[colIndices.tourneyWin])}</td>
+                            <td>${colIndices.evidence !== -1 && row[colIndices.evidence] ? `<a href="${row[colIndices.evidence]}" target="_blank" style="color:#d4af37;">Link</a>` : '-'}</td>
                         </tr>
                     `;
                 });
@@ -550,7 +570,7 @@
         function getRankedPlayers(records) {
             const playerTotals = {};
             records.forEach(row => {
-                const name = row[colIndices.name];
+                const name = row[colIndices.name] ? row[colIndices.name].trim().toLowerCase() : null;
                 if (!name) return;
 
                 const cBuy = parseFloat(row[colIndices.cashBuy]) || 0;
