@@ -685,7 +685,7 @@
                 <span id="vault-badge-debt" class="badge-status"></span>
                 <button type="button" class="badge-logout-btn" onclick="handleVaultLogout()" title="Lock / Sign out">&times;</button>
             </div>
-            <span class="badge-disclaimer">Amount updated upon the close of battle night, not live during combat.</span>
+            <span class="badge-disclaimer">Updated after games, not live during play</span>
         </div>
     </div>
 
@@ -799,7 +799,7 @@
                     if (rows.length < 2) return;
 
                     const headers = rows[0].map(h => h.trim().toUpperCase());
-                    let playerColIdx = headers.findIndex(h => 
+                    let playerColIdx = headers.findIndex(h =>
                         h.includes('PERSON') || h.includes('PLAYER') || h.includes('NAME') || h.includes('GLADIATOR')
                     );
                     if (playerColIdx === -1) playerColIdx = 0;
@@ -1228,10 +1228,10 @@
 
             const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player.trim())}&password=${encodeURIComponent(pass.trim())}&t=${Date.now()}`;
 
-            fetch(targetUrl, { 
+            fetch(targetUrl, {
                 method: 'GET',
                 redirect: 'follow',
-                cache: 'no-store' 
+                cache: 'no-store'
             })
                 .then(r => {
                     if (!r.ok) throw new Error("Network response was not ok: " + r.status);
@@ -1258,7 +1258,7 @@
                     btn.textContent = 'Unlock Balance';
                     btn.disabled = false;
                     errBox.textContent = err.message && err.message.indexOf("Network") !== -1
-                        ? 'Could not contact vault API. Check Apps Script URL.' 
+                        ? 'Could not contact vault API. Check Apps Script URL.'
                         : (err.message || 'Verification failed.');
                     errBox.style.display = 'block';
                 });
