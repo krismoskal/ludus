@@ -58,7 +58,7 @@
             color: var(--gold-dim);
         }
 
-        /* Vault Login Button */
+        /* Vault Trigger Button */
         .vault-trigger-btn {
             margin-top: 6px;
             background: transparent;
@@ -81,6 +81,51 @@
             background: rgba(212, 175, 55, 0.15);
             border-color: var(--gold-primary);
             box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Unlocked User Header Badge */
+        .vault-user-badge {
+            margin-top: 6px;
+            background: #191007;
+            border: 1px solid var(--gold-dim);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .badge-player {
+            font-weight: bold;
+            color: var(--gold-primary);
+            text-transform: capitalize;
+        }
+
+        .badge-status.owe-dominus {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+
+        .badge-status.dominus-owes {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .badge-logout-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 2px;
+            transition: color 0.2s;
+        }
+
+        .badge-logout-btn:hover {
+            color: #ff4d4d;
         }
 
         header {
@@ -497,7 +542,7 @@
             color: var(--gold-dim);
         }
 
-        .vault-field select, .vault-field input {
+        .vault-field select {
             background: #110904;
             border: 1px solid var(--gold-dim);
             color: var(--text-light);
@@ -508,9 +553,68 @@
             outline: none;
         }
 
-        .vault-field select:focus, .vault-field input:focus {
+        /* Password input wrapper with reveal button */
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input-wrapper input {
+            width: 100%;
+            background: #110904;
+            border: 1px solid var(--gold-dim);
+            color: var(--text-light);
+            font-family: 'Georgia', serif;
+            padding: 9px 40px 9px 12px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 8px;
+            background: transparent;
+            border: none;
+            color: var(--gold-dim);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.2s;
+            user-select: none;
+        }
+
+        .password-toggle-btn:hover {
+            color: var(--gold-primary);
+        }
+
+        .vault-field select:focus,
+        .password-input-wrapper input:focus {
             border-color: var(--gold-primary);
             box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Remember Me Row */
+        .vault-remember-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .vault-remember-row input[type="checkbox"] {
+            accent-color: var(--gold-primary);
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
         }
 
         .vault-submit {
@@ -524,7 +628,6 @@
             padding: 10px;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
             transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -593,7 +696,16 @@
     <div class="header-seal">
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
-        <button type="button" class="vault-trigger-btn" onclick="openVaultModal()">🪙 Gladiator Vault</button>
+
+        <!-- Default Locked Button -->
+        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">🪙 Gladiator Vault</button>
+
+        <!-- Unlocked Persistent Balance Banner -->
+        <div id="vault-user-badge" class="vault-user-badge" style="display: none;">
+            <span id="vault-badge-name" class="badge-player"></span>
+            <span id="vault-badge-debt" class="badge-status"></span>
+            <button type="button" class="badge-logout-btn" onclick="handleVaultLogout()" title="Lock / Sign out">&times;</button>
+        </div>
     </div>
 
     <header>
@@ -645,8 +757,16 @@
 
                 <div class="vault-field">
                     <label for="vault-password-input">Password</label>
-                    <input type="password" id="vault-password-input" placeholder="Enter arena passcode" required autocomplete="off">
+                    <div class="password-input-wrapper">
+                        <input type="password" id="vault-password-input" placeholder="Enter arena passcode" required autocomplete="off">
+                        <button type="button" class="password-toggle-btn" id="toggle-pw-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">👁</button>
+                    </div>
                 </div>
+
+                <label class="vault-remember-row">
+                    <input type="checkbox" id="vault-remember-me">
+                    <span>Remember me on this device</span>
+                </label>
 
                 <button type="submit" class="vault-submit" id="vault-submit-btn">Unlock Balance</button>
             </form>
@@ -661,7 +781,6 @@
     </div>
 
     <script>
-        // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE:
         const VAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwqrMTok0Ffyb6cuf2zbDNnggzPtCmoMOKHdIU71niZYy5bhekRwy2YlEDFE_nE27kH/exec';
 
         function handleLogoError() {
@@ -734,6 +853,20 @@
             });
 
             updateDashboard();
+
+            // Auto-login on load if credentials were saved
+            const savedPlayer = localStorage.getItem('ludus_vault_player');
+            const savedPass = localStorage.getItem('ludus_vault_pass');
+            if (savedPlayer && savedPass) {
+                fetch(`${VAULT_API_URL}?name=${encodeURIComponent(savedPlayer)}&password=${encodeURIComponent(savedPass)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            applyVaultSession(savedPlayer, data.debtType, data.amount);
+                        }
+                    })
+                    .catch(err => console.error("Auto-auth verification error:", err));
+            }
         }
 
         function populateVaultPlayers() {
@@ -750,6 +883,11 @@
                 opt.textContent = n.charAt(0).toUpperCase() + n.slice(1);
                 select.appendChild(opt);
             });
+
+            const savedPlayer = localStorage.getItem('ludus_vault_player');
+            if (savedPlayer) {
+                select.value = savedPlayer;
+            }
         }
 
         function parseRecordDate(dateStr) {
@@ -1021,12 +1159,68 @@
             if (el) el.classList.toggle('active');
         }
 
-        /* --- Vault Modal Logic --- */
+        /* --- Password Visibility Toggle --- */
+        function togglePasswordVisibility() {
+            const pwInput = document.getElementById('vault-password-input');
+            const toggleBtn = document.getElementById('toggle-pw-btn');
+
+            if (pwInput.type === 'password') {
+                pwInput.type = 'text';
+                toggleBtn.textContent = '🔒';
+            } else {
+                pwInput.type = 'password';
+                toggleBtn.textContent = '👁';
+            }
+        }
+
+        /* --- Vault Modal & Header Banner Logic --- */
+        function applyVaultSession(playerName, debtType, amount) {
+            const dType = (debtType || '').toLowerCase();
+            const isDebt = dType.includes('owes me') || dType === 'owes';
+            const openBtn = document.getElementById('vault-open-btn');
+            const badge = document.getElementById('vault-user-badge');
+            const nameSpan = document.getElementById('vault-badge-name');
+            const debtSpan = document.getElementById('vault-badge-debt');
+
+            nameSpan.textContent = playerName;
+            if (isDebt) {
+                debtSpan.textContent = `You owe ${amount}`;
+                debtSpan.className = 'badge-status owe-dominus';
+            } else {
+                debtSpan.textContent = `Dominus owes you ${amount}`;
+                debtSpan.className = 'badge-status dominus-owes';
+            }
+
+            openBtn.style.display = 'none';
+            badge.style.display = 'inline-flex';
+        }
+
+        function handleVaultLogout() {
+            localStorage.removeItem('ludus_vault_player');
+            localStorage.removeItem('ludus_vault_pass');
+            document.getElementById('vault-user-badge').style.display = 'none';
+            document.getElementById('vault-open-btn').style.display = 'inline-flex';
+        }
+
         function openVaultModal() {
             document.getElementById('vault-modal').classList.add('open');
             document.getElementById('vault-error-msg').style.display = 'none';
             document.getElementById('vault-result-card').classList.remove('show');
-            document.getElementById('vault-password-input').value = '';
+
+            const savedPlayer = localStorage.getItem('ludus_vault_player');
+            const savedPass = localStorage.getItem('ludus_vault_pass');
+            const rememberCheckbox = document.getElementById('vault-remember-me');
+
+            if (savedPlayer) {
+                document.getElementById('vault-player-select').value = savedPlayer;
+            }
+            if (savedPass) {
+                document.getElementById('vault-password-input').value = savedPass;
+                rememberCheckbox.checked = true;
+            } else {
+                document.getElementById('vault-password-input').value = '';
+                rememberCheckbox.checked = false;
+            }
         }
 
         function closeVaultModal() {
@@ -1037,6 +1231,7 @@
             e.preventDefault();
             const player = document.getElementById('vault-player-select').value;
             const pass = document.getElementById('vault-password-input').value;
+            const remember = document.getElementById('vault-remember-me').checked;
             const btn = document.getElementById('vault-submit-btn');
             const errBox = document.getElementById('vault-error-msg');
             const resultBox = document.getElementById('vault-result-card');
@@ -1060,10 +1255,17 @@
                         return;
                     }
 
+                    if (remember) {
+                        localStorage.setItem('ludus_vault_player', player);
+                        localStorage.setItem('ludus_vault_pass', pass);
+                    } else {
+                        localStorage.removeItem('ludus_vault_player');
+                        localStorage.removeItem('ludus_vault_pass');
+                    }
+
                     const statusElem = document.getElementById('vault-result-status');
                     const amtElem = document.getElementById('vault-result-amount');
 
-                    // If 'owes me' -> player owes you (red). If 'owe' -> you owe player (green)
                     const dType = (data.debtType || '').toLowerCase();
                     const isDebt = dType.includes('owes me') || dType === 'owes';
 
@@ -1077,6 +1279,14 @@
 
                     amtElem.textContent = data.amount;
                     resultBox.classList.add('show');
+
+                    // Display directly on page header badge
+                    applyVaultSession(player, data.debtType, data.amount);
+
+                    // Smoothly close modal after brief visual confirmation
+                    setTimeout(() => {
+                        closeVaultModal();
+                    }, 1200);
                 })
                 .catch(err => {
                     console.error(err);
