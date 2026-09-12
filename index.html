@@ -83,6 +83,27 @@
             box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
         }
 
+        /* Attention pulse when denied entry to artifacts */
+        .vault-trigger-btn.pulse-attention {
+            animation: pulseGlow 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                border-color: var(--gold-dim);
+                box-shadow: 0 0 4px rgba(212, 175, 55, 0.2);
+            }
+            50% {
+                border-color: #ff4d4d;
+                box-shadow: 0 0 16px rgba(255, 77, 77, 0.6);
+                transform: scale(1.03);
+            }
+            100% {
+                border-color: var(--gold-dim);
+                box-shadow: 0 0 4px rgba(212, 175, 55, 0.2);
+            }
+        }
+
         /* Unlocked User Header Badge Container */
         .vault-badge-container {
             margin-top: 6px;
@@ -96,18 +117,29 @@
             background: #191007;
             border: 1px solid var(--gold-dim);
             border-radius: 4px;
-            padding: 4px 10px;
+            padding: 5px 12px;
             font-size: 0.8rem;
             display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .badge-salute-row {
+            display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            width: 100%;
+            justify-content: flex-end;
         }
 
         .badge-player {
             font-weight: bold;
             color: var(--gold-primary);
             text-transform: capitalize;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
         }
 
         .badge-status.owe-dominus {
@@ -129,7 +161,7 @@
             background: transparent;
             border: none;
             color: var(--text-dim);
-            font-size: 1rem;
+            font-size: 1.1rem;
             line-height: 1;
             cursor: pointer;
             padding: 0 2px;
@@ -281,12 +313,27 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            user-select: none;
         }
 
         .artifact-badge:hover {
             background: rgba(212, 175, 55, 0.35);
             border-color: var(--gold-primary);
             box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
+        .artifact-badge.denied-shake {
+            background: rgba(139, 0, 0, 0.45);
+            border-color: #ff4d4d;
+            color: #ff4d4d;
+            font-weight: bold;
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
         }
 
         .date-header::after {
@@ -578,7 +625,7 @@
             padding: 20px;
         }
 
-        /* Gladiator Vault Modal */
+        /* Gladiator Credentials Modal */
         .vault-backdrop {
             display: none;
             position: fixed;
@@ -842,6 +889,12 @@
             .vault-badge-container {
                 align-items: center;
             }
+            .vault-user-badge {
+                align-items: center;
+            }
+            .badge-salute-row {
+                justify-content: center;
+            }
         }
 
         @media (max-width: 768px) {
@@ -857,18 +910,20 @@
 </head>
 <body>
 
-    <!-- Upper Right Header Seal with Vault Access -->
+    <!-- Upper Right Header Seal with Unconfirmed / Logged In Status -->
     <div class="header-seal">
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
 
-        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">📜 Check Your Ludus Balance</button>
+        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">⚔️ Gladiatorial Status Unconfirmed: Please Log In</button>
 
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
             <div class="vault-user-badge">
-                <span id="vault-badge-name" class="badge-player"></span>
+                <div class="badge-salute-row">
+                    <span id="vault-badge-name" class="badge-player"></span>
+                    <button type="button" class="badge-logout-btn" onclick="handleVaultLogout()" title="Relinquish Command / Lock">&times;</button>
+                </div>
                 <span id="vault-badge-debt" class="badge-status"></span>
-                <button type="button" class="badge-logout-btn" onclick="handleVaultLogout()" title="Lock / Sign out">&times;</button>
             </div>
             <span class="badge-disclaimer">Accurate pre-game; updated after the night ends.</span>
         </div>
@@ -907,11 +962,11 @@
         </div>
     </div>
 
-    <!-- Private Vault Modal -->
+    <!-- Private Credentials Modal -->
     <div id="vault-modal" class="vault-backdrop">
         <div class="vault-card">
             <button type="button" class="vault-close" onclick="closeVaultModal()">&times;</button>
-            <h3>📜 Treasury Ledger</h3>
+            <h3>📜 Confirm Gladiator Credentials</h3>
 
             <form onsubmit="handleVaultLogin(event)">
                 <div class="vault-field">
@@ -929,7 +984,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="vault-submit" id="vault-submit-btn">Unlock Balance</button>
+                <button type="submit" class="vault-submit" id="vault-submit-btn">Unlock Status</button>
             </form>
 
             <div id="vault-error-msg" class="vault-error"></div>
@@ -1081,11 +1136,9 @@
             const clean = dateStr.trim();
             const parts = clean.split(/[-/]/);
             if (parts.length === 3) {
-                // Format: YYYY-MM-DD
                 if (parts[0].length === 4) {
                     return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
                 }
-                // Format: M/D/YYYY or MM/DD/YYYY
                 if (parts[2].length === 4) {
                     return new Date(parseInt(parts[2], 10), parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
                 }
@@ -1168,7 +1221,6 @@
             dates.forEach((date, index) => {
                 const isOpen = index === 0 ? 'active' : '';
 
-                // Calculate net profit and sort gladiators inside each game from best to worst
                 const sortedGameRows = groups[date].map(row => {
                     const rawCB = row[colIndices.cashBuy];
                     const rawCW = row[colIndices.cashWin];
@@ -1202,10 +1254,7 @@
                         totalProfit: totalProfit,
                         playedAny: hasCash || hasTourney
                     };
-                }).sort((a, b) => {
-                    // Highest net profit down to lowest/biggest loss
-                    return b.totalProfit - a.totalProfit;
-                });
+                }).sort((a, b) => b.totalProfit - a.totalProfit);
 
                 standingsHtml += `
                     <div class="date-group ${isOpen}" id="group-${index}">
@@ -1259,7 +1308,6 @@
             });
             document.getElementById('standings-target').innerHTML = standingsHtml;
 
-            // Trigger Drive Artifacts Check for each date row
             dates.forEach((date, index) => {
                 checkDriveArtifacts(date, `artifact-badge-${index}`);
             });
@@ -1414,7 +1462,7 @@
 
             const numericVal = parseFloat(String(amount).replace(/[^0-9.-]+/g, '')) || 0;
 
-            nameSpan.textContent = playerName + ':';
+            nameSpan.textContent = `⚔️ Gladiator ${playerName}, Welcome!`;
 
             if (numericVal === 0) {
                 debtSpan.textContent = 'Debt-free! Honor intact';
@@ -1427,6 +1475,7 @@
                 debtSpan.className = 'badge-status dominus-owes';
             }
 
+            openBtn.classList.remove('pulse-attention');
             openBtn.style.display = 'none';
             badgeContainer.style.display = 'flex';
         }
@@ -1435,10 +1484,14 @@
             sessionStorage.removeItem('ludus_session_player');
             sessionStorage.removeItem('ludus_session_pass');
             document.getElementById('vault-badge-container').style.display = 'none';
-            document.getElementById('vault-open-btn').style.display = 'inline-flex';
+            const openBtn = document.getElementById('vault-open-btn');
+            openBtn.classList.remove('pulse-attention');
+            openBtn.style.display = 'inline-flex';
         }
 
         function openVaultModal() {
+            const openBtn = document.getElementById('vault-open-btn');
+            openBtn.classList.remove('pulse-attention');
             document.getElementById('vault-modal').classList.add('open');
             document.getElementById('vault-error-msg').style.display = 'none';
             document.getElementById('vault-password-input').value = '';
@@ -1471,7 +1524,7 @@
                     return r.json();
                 })
                 .then(data => {
-                    btn.textContent = 'Unlock Balance';
+                    btn.textContent = 'Unlock Status';
                     btn.disabled = false;
 
                     if (!data.success) {
@@ -1488,7 +1541,7 @@
                 })
                 .catch(err => {
                     console.error("Vault Error Details:", err);
-                    btn.textContent = 'Unlock Balance';
+                    btn.textContent = 'Unlock Status';
                     btn.disabled = false;
                     errBox.textContent = err.message && err.message.indexOf("Network") !== -1
                         ? 'Could not contact vault API. Check Apps Script URL.' 
@@ -1562,14 +1615,42 @@
             const label = count === 1 ? '1 Artifact' : `${count} Artifacts`;
 
             badgeContainer.innerHTML = `
-                <span class="artifact-badge" onclick="openLightbox('${folderKey}', event)">
+                <span class="artifact-badge" onclick="handleArtifactClick('${folderKey}', this, event)">
                     📷 ${label}
                 </span>
             `;
         }
 
-        function openLightbox(folderKey, event) {
+        function handleArtifactClick(folderKey, badgeElem, event) {
             if (event) event.stopPropagation();
+
+            const isAuthenticated = !!sessionStorage.getItem('ludus_session_player');
+
+            if (!isAuthenticated) {
+                // Denied in-place response: guide eyes directly to the header login
+                const originalContent = badgeElem.innerHTML;
+                badgeElem.classList.add('denied-shake');
+                badgeElem.innerHTML = '⚔️ DENIED WEAKLING! Only for Gladiators! Login at the top ↑';
+
+                const loginBtn = document.getElementById('vault-open-btn');
+                if (loginBtn) {
+                    loginBtn.classList.remove('pulse-attention');
+                    void loginBtn.offsetWidth; // Force CSS reflow to replay pulse
+                    loginBtn.classList.add('pulse-attention');
+                }
+
+                setTimeout(() => {
+                    badgeElem.classList.remove('denied-shake');
+                    badgeElem.innerHTML = originalContent;
+                }, 3200);
+
+                return;
+            }
+
+            openLightbox(folderKey);
+        }
+
+        function openLightbox(folderKey) {
             const images = driveArtifactsCache[folderKey] || [];
             if (images.length === 0) return;
 
