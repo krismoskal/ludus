@@ -391,7 +391,24 @@
 
         .profit-pos { color: var(--profit-pos); }
         .profit-neg { color: var(--profit-neg); }
-        .profit-zero { color: var(--text-dim); }
+
+        /* Break-even Survivor Shield Styling */
+        .profit-zero.break-even-shield {
+            color: var(--gold-primary);
+            cursor: help;
+            letter-spacing: 0.5px;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .profit-zero.break-even-shield:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.7));
+        }
+
         .unplayed { color: #554433; font-style: italic; }
 
         /* Podium / Ledger Styling */
@@ -1072,7 +1089,7 @@
             const absProfit = Math.abs(profit);
             if (profit > 0) return `<span class="profit-tag profit-pos">(${absProfit})</span>`;
             if (profit < 0) return `<span class="profit-tag profit-neg">(${absProfit})</span>`;
-            return `<span class="profit-tag profit-zero">(0)</span>`;
+            return `<span class="profit-tag profit-zero break-even-shield" title="Defensor! Survived the arena with zero blood spilled">🛡️ (=)</span>`;
         }
 
         function ensureDollarSign(amt) {
