@@ -454,7 +454,7 @@
     </div>
 
     <div class="section-container">
-        <h2>Arena Standings</h2>
+        <h2>⚔️ Arena Battles</h2>
         <div id="standings-target">
             <div class="loading">Evaluating arena champions...</div>
         </div>
@@ -606,11 +606,20 @@
                 return;
             }
 
+            // Sort dates newest to oldest so the most recent battle is always at the top
+            dates.sort((a, b) => {
+                const dateA = parseRecordDate(a) || 0;
+                const dateB = parseRecordDate(b) || 0;
+                return dateB - dateA;
+            });
+
             let standingsHtml = '';
             dates.forEach((date, index) => {
-                const isFirst = index === 0 ? 'active' : '';
+                // First/most recent battle defaults to open across all views
+                const isOpen = index === 0 ? 'active' : '';
+
                 standingsHtml += `
-                    <div class="date-group ${isFirst}" id="group-${index}">
+                    <div class="date-group ${isOpen}" id="group-${index}">
                         <div class="date-header" onclick="toggleDate('group-${index}')">${date}</div>
                         <div class="date-content">
                             <table>
