@@ -646,18 +646,23 @@
             display: none;
         }
 
-        @media (max-width: 768px) {
-            body { padding: 12px 6px; }
-            .section-container { padding: 16px 8px; }
+        /* Prevent logo & seal collision on laptops / medium window widths */
+        @media (max-width: 1100px) {
             .header-seal {
                 position: static;
                 text-align: center;
                 align-items: center;
-                margin-bottom: 14px;
+                margin-bottom: 15px;
             }
             .vault-badge-container {
                 align-items: center;
             }
+        }
+
+        /* Mobile adjustments for tables and spacing */
+        @media (max-width: 768px) {
+            body { padding: 12px 6px; }
+            .section-container { padding: 16px 8px; }
             th, td { padding: 6px 8px; }
             .td-player-name { padding-left: 8px !important; }
         }
@@ -795,7 +800,7 @@
 
                     const headers = rows[0].map(h => h.trim().toUpperCase());
                     let playerColIdx = headers.findIndex(h => h.includes('PLAYER') || h.includes('NAME') || h.includes('GLADIATOR'));
-                    if (playerColIdx === -1) playerColIdx = 0; // Default to first column if no named header
+                    if (playerColIdx === -1) playerColIdx = 0;
 
                     const validPlayers = new Set();
                     for (let i = 1; i < rows.length; i++) {
@@ -1236,11 +1241,9 @@
                         return;
                     }
 
-                    // Keep credentials in temporary session storage only
                     sessionStorage.setItem('ludus_session_player', player);
                     sessionStorage.setItem('ludus_session_pass', pass);
 
-                    // Immediately close modal and reveal top banner
                     closeVaultModal();
                     applyVaultSession(player, data.debtType, data.amount);
                 })
@@ -1277,14 +1280,12 @@
             refreshActiveVaultBalance();
         }
 
-        // Wake-up refresh when player unlocks phone or switches back to tab
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
                 pollAllData();
             }
         });
 
-        // 5-minute background pulse (300,000 ms)
         setInterval(pollAllData, 300000);
     </script>
 </body>
