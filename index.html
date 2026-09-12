@@ -38,7 +38,16 @@
             text-align: right;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
+        }
+
+        .seal-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
         .seal-epoch {
@@ -46,15 +55,6 @@
             letter-spacing: 1.5px;
             text-transform: uppercase;
             color: var(--gold-dim);
-        }
-
-        .seal-dominus {
-            font-size: 0.9rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--gold-primary);
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
         header {
@@ -66,7 +66,7 @@
         .logo-container {
             width: 220px;
             height: 220px;
-            margin: 0 auto 15px;
+            margin: 0 auto;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -81,15 +81,6 @@
             object-fit: cover;
             object-position: 52.3% 49.2%;
             transform: scale(1.15);
-        }
-
-        h1 {
-            color: var(--gold-primary);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 15px 0 5px 0;
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
         }
 
         /* Filter Controls */
@@ -418,7 +409,7 @@
             .header-seal {
                 position: static;
                 text-align: center;
-                margin-bottom: 10px;
+                margin-bottom: 14px;
             }
             th, td { padding: 6px 8px; }
             .td-player-name { padding-left: 8px !important; }
@@ -429,8 +420,8 @@
 
     <!-- Upper Right Header Seal -->
     <div class="header-seal">
+        <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
-        <span class="seal-dominus">Dominus Kris</span>
     </div>
 
     <header>
@@ -441,7 +432,6 @@
                 <path d="M35,35 L65,65 M65,35 L35,65" stroke="#aa841c" stroke-width="3"/>
             </svg>
         </div>
-        <h1>Ludus Magnus</h1>
     </header>
 
     <div class="filter-wrapper">
@@ -565,9 +555,9 @@
                 if (activeRange === 'current-month') {
                     return d.getFullYear() === currYear && d.getMonth() === currMonth;
                 } else if (activeRange === 'last-3-months') {
-                    // Starts on the 1st of 2 months ago (captures current month + 2 prior)
+                    // Start of month: 2 months prior (00:00:00)
                     const startDate = new Date(currYear, currMonth - 2, 1, 0, 0, 0, 0);
-                    // Ends on the last millisecond of the current month
+                    // End of current month (23:59:59.999)
                     const endDate = new Date(currYear, currMonth + 1, 0, 23, 59, 59, 999);
                     return d >= startDate && d <= endDate;
                 } else if (activeRange === 'current-year') {
