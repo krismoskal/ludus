@@ -392,21 +392,67 @@
         .profit-pos { color: var(--profit-pos); }
         .profit-neg { color: var(--profit-neg); }
 
-        /* Break-even Survivor Shield Styling */
-        .profit-zero.break-even-shield {
-            color: var(--gold-primary);
-            cursor: help;
-            letter-spacing: 0.5px;
-            font-size: 0.8rem;
+        /* Break-even Survivor Shield with Instant Tooltip */
+        .break-even-shield {
+            position: relative;
             display: inline-flex;
             align-items: center;
-            gap: 2px;
-            transition: transform 0.15s ease, filter 0.15s ease;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-left: 5px;
+            vertical-align: middle;
+            transition: transform 0.15s ease;
         }
 
-        .profit-zero.break-even-shield:hover {
-            transform: scale(1.1);
-            filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.7));
+        .break-even-shield:hover {
+            transform: scale(1.2);
+        }
+
+        /* Custom Instant Tooltip Bubble */
+        .break-even-shield::after {
+            content: "Defensor! Survived the arena with zero blood spilled";
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #110904;
+            color: var(--gold-primary);
+            border: 1px solid var(--gold-dim);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 100;
+        }
+
+        /* Tooltip Pointer Arrow */
+        .break-even-shield::before {
+            content: "";
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--gold-dim) transparent transparent transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease;
+            z-index: 101;
+        }
+
+        .break-even-shield:hover::after,
+        .break-even-shield:hover::before {
+            opacity: 1;
+            visibility: visible;
         }
 
         .unplayed { color: #554433; font-style: italic; }
@@ -1089,7 +1135,7 @@
             const absProfit = Math.abs(profit);
             if (profit > 0) return `<span class="profit-tag profit-pos">(${absProfit})</span>`;
             if (profit < 0) return `<span class="profit-tag profit-neg">(${absProfit})</span>`;
-            return `<span class="profit-tag profit-zero break-even-shield" title="Defensor! Survived the arena with zero blood spilled">🛡️ (=)</span>`;
+            return `<span class="break-even-shield">🛡️</span>`;
         }
 
         function ensureDollarSign(amt) {
@@ -1460,7 +1506,7 @@
             fetch(`${VAULT_API_URL}?name=${encodeURIComponent(sessionPlayer)}&password=${encodeURIComponent(sessionPass)}&t=${Date.now()}`, {
                 method: 'GET',
                 redirect: 'follow',
-                cache: 'no-store'
+                cache: 'no-store' 
             })
             .then(r => {
                 if (!r.ok) throw new Error("Status: " + r.status);
