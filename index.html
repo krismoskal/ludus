@@ -191,7 +191,7 @@
 
         .date-content {
             display: none;
-            padding: 12px;
+            padding: 10px 4px;
             background-color: #160f08;
             overflow-x: auto;
         }
@@ -206,22 +206,22 @@
             border-collapse: separate;
             border-spacing: 0;
             text-align: center;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
         }
 
-        /* Narrower cell spacing */
+        /* Slimmed cell padding for narrow profile */
         th, td {
-            padding: 6px 8px;
+            padding: 5px 6px;
             white-space: nowrap;
         }
 
         /* Group Header Row */
         .group-header {
             text-align: center;
-            font-size: 0.82rem;
-            letter-spacing: 1px;
+            font-size: 0.78rem;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
-            padding: 7px 6px;
+            padding: 6px 4px;
             font-weight: bold;
             color: var(--gold-primary);
             background: rgba(212, 175, 55, 0.08);
@@ -245,10 +245,10 @@
         /* Sub-Header Row */
         .header-sub-row th {
             color: var(--gold-dim);
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            padding: 5px 6px;
+            padding: 5px 4px;
             text-align: center;
             border-bottom: 1px solid var(--gold-subtle);
             background: rgba(212, 175, 55, 0.03);
@@ -256,7 +256,7 @@
 
         .th-player {
             text-align: left !important;
-            padding-left: 10px !important;
+            padding-left: 8px !important;
             border-left: 1.5px solid var(--gold-dim);
         }
 
@@ -275,10 +275,10 @@
 
         .td-player-name {
             text-align: left;
-            padding-left: 10px;
+            padding-left: 8px;
             font-weight: bold;
             text-transform: capitalize;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
         }
 
         /* Bottom boundary closing for last row */
@@ -429,10 +429,27 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 12px 6px;
+            }
+
+            .section-container {
+                padding: 16px 8px;
+            }
+
             .header-seal {
                 position: static;
                 text-align: center;
                 margin-bottom: 10px;
+            }
+
+            th, td {
+                padding: 4px 4px;
+            }
+
+            .td-player-name, .th-player {
+                padding-left: 5px !important;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -636,15 +653,15 @@
                                     </tr>
                                     <tr class="header-sub-row">
                                         <th class="th-player">Player</th>
-                                        <th class="frame-player-right">PROFIT</th>
+                                        <th class="frame-player-right">+/-</th>
 
-                                        <th>Buy-in</th>
-                                        <th>Win</th>
-                                        <th class="frame-cash-right">PROFIT</th>
+                                        <th>IN</th>
+                                        <th>OUT</th>
+                                        <th class="frame-cash-right">+/-</th>
 
-                                        <th>Buy-in</th>
-                                        <th>Win</th>
-                                        <th class="frame-tourney-right">PROFIT</th>
+                                        <th>IN</th>
+                                        <th>OUT</th>
+                                        <th class="frame-tourney-right">+/-</th>
                                     </tr>
                                 </thead>
                                 <tbody>
