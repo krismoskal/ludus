@@ -1015,13 +1015,20 @@
 
         function parseRecordDate(dateStr) {
             if (!dateStr) return null;
-            const parts = dateStr.trim().split(/[-/]/);
+            const clean = dateStr.trim();
+            const parts = clean.split(/[-/]/);
             if (parts.length === 3) {
-                if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
-                return new Date(parts[2], parts[0] - 1, parts[1]);
+                // Format: YYYY-MM-DD
+                if (parts[0].length === 4) {
+                    return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                }
+                // Format: M/D/YYYY or MM/DD/YYYY
+                if (parts[2].length === 4) {
+                    return new Date(parseInt(parts[2], 10), parseInt(parts[0], 10) - 1, parseInt(parts[1], 10));
+                }
             }
-            const d = new Date(dateStr);
-            return isNaN(d) ? null : d;
+            const d = new Date(clean);
+            return isNaN(d.getTime()) ? null : d;
         }
 
         function updateDashboard() {
@@ -1098,6 +1105,45 @@
             dates.forEach((date, index) => {
                 const isOpen = index === 0 ? 'active' : '';
 
+                // Calculate net profit and sort gladiators inside each game from best to worst
+                const sortedGameRows = groups[date].map(row => {
+                    const rawCB = row[colIndices.cashBuy];
+                    const rawCW = row[colIndices.cashWin];
+                    const rawTB = row[colIndices.tourneyBuy];
+                    const rawTW = row[colIndices.tourneyWin];
+
+                    const hasCash = (rawCB !== undefined && rawCB !== null && rawCB.trim() !== '') ||
+                                    (rawCW !== undefined && rawCW !== null && rawCW.trim() !== '');
+                    const hasTourney = (rawTB !== undefined && rawTB !== null && rawTB.trim() !== '') ||
+                                      (rawTW !== undefined && rawTW !== null && rawTW.trim() !== '');
+
+                    const cBuy = parseFloat(rawCB) || 0;
+                    const cWin = parseFloat(rawCW) || 0;
+                    const tBuy = parseFloat(rawTB) || 0;
+                    const tWin = parseFloat(rawTW) || 0;
+
+                    const cashProfit = cWin - cBuy;
+                    const tourneyProfit = tWin - tBuy;
+                    const totalProfit = (hasCash ? cashProfit : 0) + (hasTourney ? tourneyProfit : 0);
+
+                    return {
+                        row: row,
+                        rawCB: rawCB,
+                        rawCW: rawCW,
+                        rawTB: rawTB,
+                        rawTW: rawTW,
+                        hasCash: hasCash,
+                        hasTourney: hasTourney,
+                        cashProfit: cashProfit,
+                        tourneyProfit: tourneyProfit,
+                        totalProfit: totalProfit,
+                        playedAny: hasCash || hasTourney
+                    };
+                }).sort((a, b) => {
+                    // Highest net profit down to lowest/biggest loss
+                    return b.totalProfit - a.totalProfit;
+                });
+
                 standingsHtml += `
                     <div class="date-group ${isOpen}" id="group-${index}">
                         <div class="date-header" onclick="toggleDate('group-${index}')">
@@ -1125,30 +1171,11 @@
                                 <tbody>
                 `;
 
-                groups[date].forEach(row => {
-                    const rawCB = row[colIndices.cashBuy];
-                    const rawCW = row[colIndices.cashWin];
-                    const rawTB = row[colIndices.tourneyBuy];
-                    const rawTW = row[colIndices.tourneyWin];
-
-                    const hasCash = (rawCB !== undefined && rawCB !== null && rawCB.trim() !== '') ||
-                                    (rawCW !== undefined && rawCW !== null && rawCW.trim() !== '');
-                    const hasTourney = (rawTB !== undefined && rawTB !== null && rawTB.trim() !== '') ||
-                                      (rawTW !== undefined && rawTW !== null && rawTW.trim() !== '');
-
-                    const cBuy = parseFloat(rawCB) || 0;
-                    const cWin = parseFloat(rawCW) || 0;
-                    const tBuy = parseFloat(rawTB) || 0;
-                    const tWin = parseFloat(rawTW) || 0;
-
-                    const cashProfit = cWin - cBuy;
-                    const tourneyProfit = tWin - tBuy;
-                    const totalProfit = (hasCash ? cashProfit : 0) + (hasTourney ? tourneyProfit : 0);
-                    const playedAny = hasCash || hasTourney;
-
-                    const cashOutDisplay = hasCash ? `${formatVal(rawCW)} ${formatProfitTag(cashProfit)}` : '<span class="unplayed">—</span>';
-                    const tourneyOutDisplay = hasTourney ? `${formatVal(rawTW)} ${formatProfitTag(tourneyProfit)}` : '<span class="unplayed">—</span>';
-                    const playerTag = playedAny ? formatProfitTag(totalProfit) : '';
+                sortedGameRows.forEach(item => {
+                    const row = item.row;
+                    const cashOutDisplay = item.hasCash ? `${formatVal(item.rawCW)} ${formatProfitTag(item.cashProfit)}` : '<span class="unplayed">—</span>';
+                    const tourneyOutDisplay = item.hasTourney ? `${formatVal(item.rawTW)} ${formatProfitTag(item.tourneyProfit)}` : '<span class="unplayed">—</span>';
+                    const playerTag = item.playedAny ? formatProfitTag(item.totalProfit) : '';
 
                     standingsHtml += `
                         <tr>
@@ -1156,10 +1183,10 @@
                                 <span>${row[colIndices.name] || '-'}</span>${playerTag}
                             </td>
 
-                            <td>${formatVal(rawCB)}</td>
+                            <td>${formatVal(item.rawCB)}</td>
                             <td class="col-cash-right">${cashOutDisplay}</td>
 
-                            <td>${formatVal(rawTB)}</td>
+                            <td>${formatVal(item.rawTB)}</td>
                             <td class="col-tourney-right">${tourneyOutDisplay}</td>
                         </tr>
                     `;
@@ -1437,19 +1464,21 @@
 
         function checkDriveArtifacts(dateStr, badgeElemId) {
             const d = parseRecordDate(dateStr);
-            if (!d) return;
+            let folderKey = dateStr.trim();
 
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            const folderKey = `${yyyy}-${mm}-${dd}`;
+            if (d) {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                folderKey = `${yyyy}-${mm}-${dd}`;
+            }
 
             if (driveArtifactsCache[folderKey]) {
                 renderBadge(badgeElemId, folderKey, driveArtifactsCache[folderKey]);
                 return;
             }
 
-            const apiUrl = `${VAULT_API_URL}?action=getArtifacts&date=${encodeURIComponent(folderKey)}&t=${Date.now()}`;
+            const apiUrl = `${VAULT_API_URL}?action=getArtifacts&date=${encodeURIComponent(folderKey)}&rawDate=${encodeURIComponent(dateStr)}&t=${Date.now()}`;
 
             fetch(apiUrl, { method: 'GET', redirect: 'follow', cache: 'no-store' })
                 .then(res => res.json())
@@ -1459,7 +1488,7 @@
                         renderBadge(badgeElemId, folderKey, data.images);
                     }
                 })
-                .catch(() => {});
+                .catch(err => console.warn("Artifact error for " + dateStr, err));
         }
 
         function renderBadge(elemId, folderKey, images) {
@@ -1527,6 +1556,9 @@
         });
 
         function pollAllData() {
+            for (const key in driveArtifactsCache) {
+                delete driveArtifactsCache[key];
+            }
             fetchSheetData();
             fetchInfoPlayers();
             refreshActiveVaultBalance();
