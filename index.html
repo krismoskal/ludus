@@ -188,7 +188,7 @@
 
         .date-content {
             display: none;
-            padding: 10px;
+            padding: 12px;
             background-color: #160f08;
             overflow-x: auto;
         }
@@ -199,22 +199,106 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             text-align: left;
         }
 
-        th {
+        /* Group Header Row */
+        .group-header {
+            text-align: center;
+            font-size: 0.95rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 8px 10px;
+            font-weight: bold;
+        }
+
+        .group-cash {
+            color: var(--gold-primary);
+            border-top: 2px solid var(--gold-dim);
+            border-left: 2px solid var(--gold-dim);
+            border-right: 2px solid var(--gold-dim);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .group-tourney {
+            color: #e6b89c;
+            border-top: 2px solid #8c6239;
+            border-left: 2px solid #8c6239;
+            border-right: 2px solid #8c6239;
+            background: rgba(205, 127, 50, 0.1);
+        }
+
+        .th-player {
             color: var(--gold-dim);
             font-size: 0.85rem;
             text-transform: uppercase;
             padding: 10px;
+            vertical-align: middle;
             border-bottom: 2px solid #3a2a18;
+        }
+
+        /* Sub-Header Row */
+        .header-sub-row th {
+            color: var(--gold-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 6px 10px 10px 10px;
+            text-align: center;
+            border-bottom: 2px solid #3a2a18;
+        }
+
+        .sub-cash {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .sub-tourney {
+            background: rgba(205, 127, 50, 0.05);
         }
 
         td {
             padding: 10px;
             border-bottom: 1px solid #261c10;
             color: var(--text-light);
+            text-align: center;
+        }
+
+        td:first-child {
+            text-align: left;
+        }
+
+        /* Sectional Vertical Borders */
+        .col-cash-left {
+            border-left: 2px solid var(--gold-dim);
+        }
+
+        .col-cash-right {
+            border-right: 2px solid var(--gold-dim);
+        }
+
+        .col-tourney-left {
+            border-left: 2px solid #8c6239;
+        }
+
+        .col-tourney-right {
+            border-right: 2px solid #8c6239;
+        }
+
+        /* Bottom boundary closing for last row */
+        tbody tr:last-child .col-cash-left,
+        tbody tr:last-child .col-cash-right,
+        tbody tr:last-child td:nth-child(2),
+        tbody tr:last-child td:nth-child(3) {
+            border-bottom: 2px solid var(--gold-dim);
+        }
+
+        tbody tr:last-child .col-tourney-left,
+        tbody tr:last-child .col-tourney-right,
+        tbody tr:last-child td:nth-child(4),
+        tbody tr:last-child td:nth-child(5) {
+            border-bottom: 2px solid #8c6239;
         }
 
         .unplayed {
@@ -440,12 +524,11 @@
                 date: headers.indexOf('DATE'),
                 name: headers.indexOf('NAME'),
                 cashBuy: headers.indexOf('CASH BUYIN'),
-                tourneyBuy: headers.indexOf('TOURNEY BUYIN'),
                 cashWin: headers.indexOf('CASH WINNINGS'),
+                tourneyBuy: headers.indexOf('TOURNEY BUYIN'),
                 tourneyWin: headers.indexOf('TOURNEY WINNINGS')
             };
 
-            // Filter out empty rows, blank lines, or rows without player name/date
             allRecords = dataRows.slice(1).filter(row => {
                 const hasDate = colIndices.date !== -1 && row[colIndices.date] && row[colIndices.date].trim() !== '';
                 const hasName = colIndices.name !== -1 && row[colIndices.name] && row[colIndices.name].trim() !== '';
@@ -535,12 +618,16 @@
                         <div class="date-content">
                             <table>
                                 <thead>
-                                    <tr>
-                                        <th>Player</th>
-                                        <th>Cash Buyin</th>
-                                        <th>Cash Win</th>
-                                        <th>Tourney Buyin</th>
-                                        <th>Tourney Win</th>
+                                    <tr class="header-group-row">
+                                        <th rowspan="2" class="th-player">Player</th>
+                                        <th colspan="2" class="group-header group-cash">Cash</th>
+                                        <th colspan="2" class="group-header group-tourney">Tournament</th>
+                                    </tr>
+                                    <tr class="header-sub-row">
+                                        <th class="sub-cash col-cash-left">Buy-in</th>
+                                        <th class="sub-cash col-cash-right">Win</th>
+                                        <th class="sub-tourney col-tourney-left">Buy-in</th>
+                                        <th class="sub-tourney col-tourney-right">Win</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -550,10 +637,10 @@
                     standingsHtml += `
                         <tr>
                             <td><strong style="text-transform: capitalize;">${row[colIndices.name] || '-'}</strong></td>
-                            <td>${formatVal(row[colIndices.cashBuy])}</td>
-                            <td>${formatVal(row[colIndices.cashWin])}</td>
-                            <td>${formatVal(row[colIndices.tourneyBuy])}</td>
-                            <td>${formatVal(row[colIndices.tourneyWin])}</td>
+                            <td class="col-cash-left">${formatVal(row[colIndices.cashBuy])}</td>
+                            <td class="col-cash-right">${formatVal(row[colIndices.cashWin])}</td>
+                            <td class="col-tourney-left">${formatVal(row[colIndices.tourneyBuy])}</td>
+                            <td class="col-tourney-right">${formatVal(row[colIndices.tourneyWin])}</td>
                         </tr>
                     `;
                 });
