@@ -113,6 +113,11 @@
             font-weight: bold;
         }
 
+        .badge-status.settled {
+            color: var(--gold-primary);
+            font-weight: bold;
+        }
+
         .badge-logout-btn {
             background: transparent;
             border: none;
@@ -668,6 +673,14 @@
             margin-top: 4px;
         }
 
+        .vault-amount-settled {
+            color: var(--gold-primary);
+            font-size: 1.4rem;
+            font-weight: bold;
+            font-family: monospace;
+            margin-top: 4px;
+        }
+
         .vault-error {
             color: #ff4d4d;
             font-size: 0.85rem;
@@ -697,8 +710,8 @@
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
 
-        <!-- Default Locked Button -->
-        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">🪙 Gladiator Vault</button>
+        <!-- Check Your Balance Trigger -->
+        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">📜 Check Your Balance</button>
 
         <!-- Unlocked Persistent Balance Banner -->
         <div id="vault-user-badge" class="vault-user-badge" style="display: none;">
@@ -745,7 +758,7 @@
     <div id="vault-modal" class="vault-backdrop">
         <div class="vault-card">
             <button type="button" class="vault-close" onclick="closeVaultModal()">&times;</button>
-            <h3>🪙 Treasury Vault</h3>
+            <h3>📜 Treasury Ledger</h3>
 
             <form onsubmit="handleVaultLogin(event)">
                 <div class="vault-field">
@@ -839,7 +852,6 @@
                 return hasDate && hasName;
             });
 
-            // Populate the Vault dropdown with known players
             populateVaultPlayers();
 
             const buttons = document.querySelectorAll('.range-btn');
@@ -943,6 +955,14 @@
             if (profit > 0) return `<span class="profit-tag profit-pos">(${absProfit})</span>`;
             if (profit < 0) return `<span class="profit-tag profit-neg">(${absProfit})</span>`;
             return `<span class="profit-tag profit-zero">(0)</span>`;
+        }
+
+        // Helper to ensure an amount string always has a leading $
+        function ensureDollarSign(amt) {
+            if (amt === undefined || amt === null) return '$0.00';
+            const str = String(amt).trim();
+            if (str.startsWith('$')) return str;
+            return '$' + str;
         }
 
         function renderStandings(records) {
@@ -1181,13 +1201,21 @@
             const badge = document.getElementById('vault-user-badge');
             const nameSpan = document.getElementById('vault-badge-name');
             const debtSpan = document.getElementById('vault-badge-debt');
+            const formattedAmount = ensureDollarSign(amount);
+
+            // Extract numeric value to check for zero balance
+            const numericVal = parseFloat(String(amount).replace(/[^0-9.-]+/g, '')) || 0;
 
             nameSpan.textContent = playerName + ':';
-            if (isDebt) {
-                debtSpan.textContent = `Blood Tribute: Pay the Ludus ${amount}`;
+
+            if (numericVal === 0) {
+                debtSpan.textContent = `Debt Cleared! Honor intact ($0.00)`;
+                debtSpan.className = 'badge-status settled';
+            } else if (isDebt) {
+                debtSpan.textContent = `Blood Tribute: Pay the Ludus ${formattedAmount}`;
                 debtSpan.className = 'badge-status owe-dominus';
             } else {
-                debtSpan.textContent = `Arena Bounty: Claim ${amount} from the Ludus`;
+                debtSpan.textContent = `Arena Bounty: Claim ${formattedAmount} from the Ludus`;
                 debtSpan.className = 'badge-status dominus-owes';
             }
 
@@ -1268,8 +1296,13 @@
 
                     const dType = (data.debtType || '').toLowerCase();
                     const isDebt = dType.includes('owes me') || dType === 'owes';
+                    const formattedAmount = ensureDollarSign(data.amount);
+                    const numericVal = parseFloat(String(data.amount).replace(/[^0-9.-]+/g, '')) || 0;
 
-                    if (isDebt) {
+                    if (numericVal === 0) {
+                        statusElem.textContent = 'Debt Cleared! Honor intact';
+                        amtElem.className = 'vault-amount-settled';
+                    } else if (isDebt) {
                         statusElem.textContent = 'Blood Tribute: Pay the Ludus';
                         amtElem.className = 'vault-amount-owed';
                     } else {
@@ -1277,13 +1310,11 @@
                         amtElem.className = 'vault-amount-claim';
                     }
 
-                    amtElem.textContent = data.amount;
+                    amtElem.textContent = formattedAmount;
                     resultBox.classList.add('show');
 
-                    // Display directly on page header badge
-                    applyVaultSession(player, data.debtType, data.amount);
+                    applyVaultSession(player, data.debtType, formattedAmount);
 
-                    // Smoothly close modal after brief visual confirmation
                     setTimeout(() => {
                         closeVaultModal();
                     }, 1200);
