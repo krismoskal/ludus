@@ -140,7 +140,6 @@
             color: #ff4d4d;
         }
 
-        /* Sub-caption disclaimer below header badge */
         .badge-disclaimer {
             font-size: 0.65rem;
             color: var(--text-dim);
@@ -261,6 +260,35 @@
             background-color: #362817;
         }
 
+        .header-left-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .artifact-badge {
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid var(--gold-dim);
+            color: var(--gold-primary);
+            font-size: 0.75rem;
+            font-weight: normal;
+            letter-spacing: 0.5px;
+            padding: 2px 9px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .artifact-badge:hover {
+            background: rgba(212, 175, 55, 0.35);
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+
         .date-header::after {
             content: '▼';
             font-size: 0.8rem;
@@ -282,7 +310,6 @@
             display: block;
         }
 
-        /* 5-Column Table with Unified Framing */
         table {
             width: 100%;
             border-collapse: separate;
@@ -646,6 +673,101 @@
             display: none;
         }
 
+        /* Lightbox Artifact Modal */
+        .lightbox-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .lightbox-backdrop.open {
+            display: flex;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 6px;
+            border: 2px solid var(--gold-dim);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.95);
+            object-fit: contain;
+        }
+
+        .lightbox-btn {
+            background: rgba(28, 20, 12, 0.85);
+            border: 1px solid var(--gold-dim);
+            color: var(--gold-primary);
+            font-size: 1.8rem;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.2s;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-btn:hover {
+            background: var(--gold-primary);
+            color: #120c06;
+        }
+
+        .lightbox-prev {
+            position: absolute;
+            left: -60px;
+        }
+
+        .lightbox-next {
+            position: absolute;
+            right: -60px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -45px;
+            right: 0;
+            font-size: 1.8rem;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .lightbox-close:hover {
+            color: var(--text-light);
+        }
+
+        .lightbox-caption {
+            margin-top: 14px;
+            color: var(--gold-primary);
+            font-size: 0.9rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
         /* Prevent logo & seal collision on laptops / medium window widths */
         @media (max-width: 1100px) {
             .header-seal {
@@ -659,12 +781,14 @@
             }
         }
 
-        /* Mobile adjustments for tables and spacing */
         @media (max-width: 768px) {
             body { padding: 12px 6px; }
             .section-container { padding: 16px 8px; }
             th, td { padding: 6px 8px; }
             .td-player-name { padding-left: 8px !important; }
+            .lightbox-prev { left: 10px; position: fixed; }
+            .lightbox-next { right: 10px; position: fixed; }
+            .lightbox-close { top: 15px; right: 20px; position: fixed; }
         }
     </style>
 </head>
@@ -675,17 +799,15 @@
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
 
-        <!-- Check Your Ludus Balance Trigger -->
         <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">📜 Check Your Ludus Balance</button>
 
-        <!-- Unlocked Persistent Balance Banner with Disclaimer Sub-caption -->
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
             <div class="vault-user-badge">
                 <span id="vault-badge-name" class="badge-player"></span>
                 <span id="vault-badge-debt" class="badge-status"></span>
                 <button type="button" class="badge-logout-btn" onclick="handleVaultLogout()" title="Lock / Sign out">&times;</button>
             </div>
-            <span class="badge-disclaimer">Updated after games, not live during play</span>
+            <span class="badge-disclaimer">Accurate pre-game; updated after the night ends.</span>
         </div>
     </div>
 
@@ -751,6 +873,17 @@
         </div>
     </div>
 
+    <!-- Lightbox Artifact Modal -->
+    <div id="lightbox-modal" class="lightbox-backdrop" onclick="closeLightbox(event)">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button type="button" class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <button type="button" class="lightbox-btn lightbox-prev" id="lightbox-prev-btn" onclick="prevArtifact()">&#8249;</button>
+            <img id="lightbox-img" class="lightbox-img" src="" alt="Arena Artifact">
+            <button type="button" class="lightbox-btn lightbox-next" id="lightbox-next-btn" onclick="nextArtifact()">&#8250;</button>
+        </div>
+        <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+
     <script>
         const VAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwqrMTok0Ffyb6cuf2zbDNnggzPtCmoMOKHdIU71niZYy5bhekRwy2YlEDFE_nE27kH/exec';
 
@@ -799,7 +932,7 @@
                     if (rows.length < 2) return;
 
                     const headers = rows[0].map(h => h.trim().toUpperCase());
-                    let playerColIdx = headers.findIndex(h =>
+                    let playerColIdx = headers.findIndex(h => 
                         h.includes('PERSON') || h.includes('PLAYER') || h.includes('NAME') || h.includes('GLADIATOR')
                     );
                     if (playerColIdx === -1) playerColIdx = 0;
@@ -967,7 +1100,12 @@
 
                 standingsHtml += `
                     <div class="date-group ${isOpen}" id="group-${index}">
-                        <div class="date-header" onclick="toggleDate('group-${index}')">${date}</div>
+                        <div class="date-header" onclick="toggleDate('group-${index}')">
+                            <div class="header-left-group">
+                                <span>${date}</span>
+                                <span id="artifact-badge-${index}"></span>
+                            </div>
+                        </div>
                         <div class="date-content">
                             <table>
                                 <thead>
@@ -1030,6 +1168,11 @@
                 standingsHtml += `</tbody></table></div></div>`;
             });
             document.getElementById('standings-target').innerHTML = standingsHtml;
+
+            // Trigger Drive Artifacts Check for each date row
+            dates.forEach((date, index) => {
+                checkDriveArtifacts(date, `artifact-badge-${index}`);
+            });
         }
 
         function getRankedPlayers(records) {
@@ -1228,13 +1371,13 @@
 
             const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player.trim())}&password=${encodeURIComponent(pass.trim())}&t=${Date.now()}`;
 
-            fetch(targetUrl, {
+            fetch(targetUrl, { 
                 method: 'GET',
                 redirect: 'follow',
-                cache: 'no-store'
+                cache: 'no-store' 
             })
                 .then(r => {
-                    if (!r.ok) throw new Error("Network response was not ok: " + r.status);
+                    if (!r.ok) throw new Error("Network response error: " + r.status);
                     return r.json();
                 })
                 .then(data => {
@@ -1258,7 +1401,7 @@
                     btn.textContent = 'Unlock Balance';
                     btn.disabled = false;
                     errBox.textContent = err.message && err.message.indexOf("Network") !== -1
-                        ? 'Could not contact vault API. Check Apps Script URL.'
+                        ? 'Could not contact vault API. Check Apps Script URL.' 
                         : (err.message || 'Verification failed.');
                     errBox.style.display = 'block';
                 });
@@ -1287,6 +1430,102 @@
             .catch(err => console.error("Poll update error:", err));
         }
 
+        /* --- Drive Artifacts & Lightbox Engine --- */
+        const driveArtifactsCache = {};
+        let currentGallery = [];
+        let currentGalleryIndex = 0;
+
+        function checkDriveArtifacts(dateStr, badgeElemId) {
+            const d = parseRecordDate(dateStr);
+            if (!d) return;
+
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const folderKey = `${yyyy}-${mm}-${dd}`;
+
+            if (driveArtifactsCache[folderKey]) {
+                renderBadge(badgeElemId, folderKey, driveArtifactsCache[folderKey]);
+                return;
+            }
+
+            const apiUrl = `${VAULT_API_URL}?action=getArtifacts&date=${encodeURIComponent(folderKey)}&t=${Date.now()}`;
+
+            fetch(apiUrl, { method: 'GET', redirect: 'follow', cache: 'no-store' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success && Array.isArray(data.images) && data.images.length > 0) {
+                        driveArtifactsCache[folderKey] = data.images;
+                        renderBadge(badgeElemId, folderKey, data.images);
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function renderBadge(elemId, folderKey, images) {
+            const badgeContainer = document.getElementById(elemId);
+            if (!badgeContainer || images.length === 0) return;
+
+            const count = images.length;
+            const label = count === 1 ? '1 Artifact' : `${count} Artifacts`;
+
+            badgeContainer.innerHTML = `
+                <span class="artifact-badge" onclick="openLightbox('${folderKey}', event)">
+                    📷 ${label}
+                </span>
+            `;
+        }
+
+        function openLightbox(folderKey, event) {
+            if (event) event.stopPropagation();
+            const images = driveArtifactsCache[folderKey] || [];
+            if (images.length === 0) return;
+
+            currentGallery = images;
+            currentGalleryIndex = 0;
+            updateLightboxUI();
+
+            document.getElementById('lightbox-modal').classList.add('open');
+        }
+
+        function closeLightbox(event) {
+            if (event && event.target.id !== 'lightbox-modal' && !event.target.classList.contains('lightbox-close')) return;
+            document.getElementById('lightbox-modal').classList.remove('open');
+        }
+
+        function updateLightboxUI() {
+            const imgElem = document.getElementById('lightbox-img');
+            const captionElem = document.getElementById('lightbox-caption');
+            const prevBtn = document.getElementById('lightbox-prev-btn');
+            const nextBtn = document.getElementById('lightbox-next-btn');
+
+            imgElem.src = currentGallery[currentGalleryIndex];
+            captionElem.textContent = `Artifact ${currentGalleryIndex + 1} of ${currentGallery.length}`;
+
+            const hasMultiple = currentGallery.length > 1;
+            prevBtn.style.display = hasMultiple ? 'flex' : 'none';
+            nextBtn.style.display = hasMultiple ? 'flex' : 'none';
+        }
+
+        function nextArtifact() {
+            currentGalleryIndex = (currentGalleryIndex + 1) % currentGallery.length;
+            updateLightboxUI();
+        }
+
+        function prevArtifact() {
+            currentGalleryIndex = (currentGalleryIndex - 1 + currentGallery.length) % currentGallery.length;
+            updateLightboxUI();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('lightbox-modal');
+            if (!modal.classList.contains('open')) return;
+
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextArtifact();
+            if (e.key === 'ArrowLeft') prevArtifact();
+        });
+
         function pollAllData() {
             fetchSheetData();
             fetchInfoPlayers();
@@ -1299,7 +1538,6 @@
             }
         });
 
-        // 5-minute background pulse
         setInterval(pollAllData, 300000);
     </script>
 </body>
