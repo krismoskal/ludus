@@ -401,7 +401,6 @@
         }
 
         const sheetId = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
-        // Specify sheet gid or export base
         const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
 
         let allRecords = [];
@@ -443,8 +442,7 @@
                 cashBuy: headers.indexOf('CASH BUYIN'),
                 tourneyBuy: headers.indexOf('TOURNEY BUYIN'),
                 cashWin: headers.indexOf('CASH WINNINGS'),
-                tourneyWin: headers.indexOf('TOURNEY WINNINGS'),
-                evidence: headers.indexOf('EVIDENCE')
+                tourneyWin: headers.indexOf('TOURNEY WINNINGS')
             };
 
             // Filter out empty rows, blank lines, or rows without player name/date
@@ -543,7 +541,6 @@
                                         <th>Cash Win</th>
                                         <th>Tourney Buyin</th>
                                         <th>Tourney Win</th>
-                                        <th>Evidence</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -557,7 +554,6 @@
                             <td>${formatVal(row[colIndices.cashWin])}</td>
                             <td>${formatVal(row[colIndices.tourneyBuy])}</td>
                             <td>${formatVal(row[colIndices.tourneyWin])}</td>
-                            <td>${colIndices.evidence !== -1 && row[colIndices.evidence] ? `<a href="${row[colIndices.evidence]}" target="_blank" style="color:#d4af37;">Link</a>` : '-'}</td>
                         </tr>
                     `;
                 });
