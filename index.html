@@ -83,9 +83,16 @@
             box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
         }
 
-        /* Unlocked User Header Badge */
-        .vault-user-badge {
+        /* Unlocked User Header Badge Container */
+        .vault-badge-container {
             margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
+        }
+
+        .vault-user-badge {
             background: #191007;
             border: 1px solid var(--gold-dim);
             border-radius: 4px;
@@ -131,6 +138,14 @@
 
         .badge-logout-btn:hover {
             color: #ff4d4d;
+        }
+
+        /* Sub-caption disclaimer below header badge */
+        .badge-disclaimer {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            font-style: italic;
+            letter-spacing: 0.3px;
         }
 
         header {
@@ -657,28 +672,32 @@
             display: block;
         }
 
-        .vault-amount-owed {
+        .vault-status-line {
+            font-size: 0.95rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .vault-status-line.owe-dominus {
             color: #ff4d4d;
-            font-size: 1.4rem;
-            font-weight: bold;
-            font-family: monospace;
-            margin-top: 4px;
         }
 
-        .vault-amount-claim {
+        .vault-status-line.dominus-owes {
             color: #2ecc71;
-            font-size: 1.4rem;
-            font-weight: bold;
-            font-family: monospace;
-            margin-top: 4px;
         }
 
-        .vault-amount-settled {
+        .vault-status-line.settled {
             color: var(--gold-primary);
-            font-size: 1.4rem;
-            font-weight: bold;
-            font-family: monospace;
-            margin-top: 4px;
+        }
+
+        .vault-disclaimer-modal {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-style: italic;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #2a1e12;
+            letter-spacing: 0.3px;
         }
 
         .vault-error {
@@ -698,6 +717,9 @@
                 align-items: center;
                 margin-bottom: 14px;
             }
+            .vault-badge-container {
+                align-items: center;
+            }
             th, td { padding: 6px 8px; }
             .td-player-name { padding-left: 8px !important; }
         }
@@ -713,11 +735,14 @@
         <!-- Check Your Balance Trigger -->
         <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">📜 Check Your Balance</button>
 
-        <!-- Unlocked Persistent Balance Banner -->
-        <div id="vault-user-badge" class="vault-user-badge" style="display: none;">
-            <span id="vault-badge-name" class="badge-player"></span>
-            <span id="vault-badge-debt" class="badge-status"></span>
-            <button type="button" class="badge-logout-btn" onclick="handleVaultLogout()" title="Lock / Sign out">&times;</button>
+        <!-- Unlocked Persistent Balance Banner with Disclaimer Sub-caption -->
+        <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
+            <div class="vault-user-badge">
+                <span id="vault-badge-name" class="badge-player"></span>
+                <span id="vault-badge-debt" class="badge-status"></span>
+                <button type="button" class="badge-logout-btn" onclick="handleVaultLogout()" title="Lock / Sign out">&times;</button>
+            </div>
+            <span class="badge-disclaimer">Amount updated upon the close of battle night, not live during combat.</span>
         </div>
     </div>
 
@@ -787,8 +812,8 @@
             <div id="vault-error-msg" class="vault-error"></div>
 
             <div id="vault-result-card" class="vault-result">
-                <div id="vault-result-status" style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;"></div>
-                <div id="vault-result-amount"></div>
+                <div id="vault-result-status" class="vault-status-line"></div>
+                <div class="vault-disclaimer-modal">Amount updated upon the close of battle night, not live during combat.</div>
             </div>
         </div>
     </div>
@@ -957,12 +982,11 @@
             return `<span class="profit-tag profit-zero">(0)</span>`;
         }
 
-        // Helper to ensure an amount string always has a leading $
+        // Helper to format clean currency without trailing decimals like .00
         function ensureDollarSign(amt) {
-            if (amt === undefined || amt === null) return '$0.00';
-            const str = String(amt).trim();
-            if (str.startsWith('$')) return str;
-            return '$' + str;
+            if (amt === undefined || amt === null) return '$0';
+            const num = parseFloat(String(amt).replace(/[^0-9.-]+/g, '')) || 0;
+            return num % 1 === 0 ? `$${num}` : `$${num.toFixed(2)}`;
         }
 
         function renderStandings(records) {
@@ -1198,7 +1222,7 @@
             const dType = (debtType || '').toLowerCase();
             const isDebt = dType.includes('owes me') || dType === 'owes';
             const openBtn = document.getElementById('vault-open-btn');
-            const badge = document.getElementById('vault-user-badge');
+            const badgeContainer = document.getElementById('vault-badge-container');
             const nameSpan = document.getElementById('vault-badge-name');
             const debtSpan = document.getElementById('vault-badge-debt');
             const formattedAmount = ensureDollarSign(amount);
@@ -1209,24 +1233,24 @@
             nameSpan.textContent = playerName + ':';
 
             if (numericVal === 0) {
-                debtSpan.textContent = `Debt Cleared! Honor intact ($0.00)`;
+                debtSpan.textContent = 'Debt-free! Honor intact';
                 debtSpan.className = 'badge-status settled';
             } else if (isDebt) {
-                debtSpan.textContent = `Blood Tribute: Pay the Ludus ${formattedAmount}`;
+                debtSpan.textContent = `${formattedAmount} owed to restore thy honor`;
                 debtSpan.className = 'badge-status owe-dominus';
             } else {
-                debtSpan.textContent = `Arena Bounty: Claim ${formattedAmount} from the Ludus`;
+                debtSpan.textContent = `Victorious! ${formattedAmount} in thy arena reserve`;
                 debtSpan.className = 'badge-status dominus-owes';
             }
 
             openBtn.style.display = 'none';
-            badge.style.display = 'inline-flex';
+            badgeContainer.style.display = 'flex';
         }
 
         function handleVaultLogout() {
             localStorage.removeItem('ludus_vault_player');
             localStorage.removeItem('ludus_vault_pass');
-            document.getElementById('vault-user-badge').style.display = 'none';
+            document.getElementById('vault-badge-container').style.display = 'none';
             document.getElementById('vault-open-btn').style.display = 'inline-flex';
         }
 
@@ -1292,32 +1316,28 @@
                     }
 
                     const statusElem = document.getElementById('vault-result-status');
-                    const amtElem = document.getElementById('vault-result-amount');
-
                     const dType = (data.debtType || '').toLowerCase();
                     const isDebt = dType.includes('owes me') || dType === 'owes';
                     const formattedAmount = ensureDollarSign(data.amount);
                     const numericVal = parseFloat(String(data.amount).replace(/[^0-9.-]+/g, '')) || 0;
 
                     if (numericVal === 0) {
-                        statusElem.textContent = 'Debt Cleared! Honor intact';
-                        amtElem.className = 'vault-amount-settled';
+                        statusElem.textContent = 'Debt-free! Honor intact';
+                        statusElem.className = 'vault-status-line settled';
                     } else if (isDebt) {
-                        statusElem.textContent = 'Blood Tribute: Pay the Ludus';
-                        amtElem.className = 'vault-amount-owed';
+                        statusElem.textContent = `${formattedAmount} owed to restore thy honor`;
+                        statusElem.className = 'vault-status-line owe-dominus';
                     } else {
-                        statusElem.textContent = 'Arena Bounty: Claim from the Ludus';
-                        amtElem.className = 'vault-amount-claim';
+                        statusElem.textContent = `Victorious! ${formattedAmount} in thy arena reserve`;
+                        statusElem.className = 'vault-status-line dominus-owes';
                     }
 
-                    amtElem.textContent = formattedAmount;
                     resultBox.classList.add('show');
-
                     applyVaultSession(player, data.debtType, formattedAmount);
 
                     setTimeout(() => {
                         closeVaultModal();
-                    }, 1200);
+                    }, 1400);
                 })
                 .catch(err => {
                     console.error(err);
