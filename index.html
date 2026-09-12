@@ -799,7 +799,9 @@
                     if (rows.length < 2) return;
 
                     const headers = rows[0].map(h => h.trim().toUpperCase());
-                    let playerColIdx = headers.findIndex(h => h.includes('PLAYER') || h.includes('NAME') || h.includes('GLADIATOR'));
+                    let playerColIdx = headers.findIndex(h => 
+                        h.includes('PERSON') || h.includes('PLAYER') || h.includes('NAME') || h.includes('GLADIATOR')
+                    );
                     if (playerColIdx === -1) playerColIdx = 0;
 
                     const validPlayers = new Set();
@@ -819,7 +821,6 @@
                 });
         }
 
-        // Initial fetches
         fetchSheetData();
         fetchInfoPlayers();
 
@@ -859,8 +860,6 @@
             });
 
             updateDashboard();
-
-            // Refresh vault if logged in during current session
             refreshActiveVaultBalance();
         }
 
@@ -1218,8 +1217,8 @@
 
         function handleVaultLogin(e) {
             e.preventDefault();
-            const player = document.getElementById('vault-player-select').value.trim();
-            const pass = document.getElementById('vault-password-input').value.trim();
+            const player = document.getElementById('vault-player-select').value;
+            const pass = document.getElementById('vault-password-input').value;
             const btn = document.getElementById('vault-submit-btn');
             const errBox = document.getElementById('vault-error-msg');
 
@@ -1227,10 +1226,17 @@
             btn.textContent = 'Verifying...';
             btn.disabled = true;
 
-            const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player)}&password=${encodeURIComponent(pass)}&t=${Date.now()}`;
+            const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player.trim())}&password=${encodeURIComponent(pass.trim())}&t=${Date.now()}`;
 
-            fetch(targetUrl, { cache: 'no-store' })
-                .then(r => r.json())
+            fetch(targetUrl, { 
+                method: 'GET',
+                redirect: 'follow',
+                cache: 'no-store' 
+            })
+                .then(r => {
+                    if (!r.ok) throw new Error("Network response was not ok: " + r.status);
+                    return r.json();
+                })
                 .then(data => {
                     btn.textContent = 'Unlock Balance';
                     btn.disabled = false;
@@ -1248,10 +1254,12 @@
                     applyVaultSession(player, data.debtType, data.amount);
                 })
                 .catch(err => {
-                    console.error(err);
+                    console.error("Vault Error Details:", err);
                     btn.textContent = 'Unlock Balance';
                     btn.disabled = false;
-                    errBox.textContent = 'Could not contact vault API. Check Apps Script URL.';
+                    errBox.textContent = err.message && err.message.indexOf("Network") !== -1
+                        ? 'Could not contact vault API. Check Apps Script URL.' 
+                        : (err.message || 'Verification failed.');
                     errBox.style.display = 'block';
                 });
         }
@@ -1263,9 +1271,14 @@
             if (!sessionPlayer || !sessionPass) return;
 
             fetch(`${VAULT_API_URL}?name=${encodeURIComponent(sessionPlayer)}&password=${encodeURIComponent(sessionPass)}&t=${Date.now()}`, {
+                method: 'GET',
+                redirect: 'follow',
                 cache: 'no-store'
             })
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error("Status: " + r.status);
+                return r.json();
+            })
             .then(data => {
                 if (data.success) {
                     applyVaultSession(sessionPlayer, data.debtType, data.amount);
@@ -1286,6 +1299,7 @@
             }
         });
 
+        // 5-minute background pulse
         setInterval(pollAllData, 300000);
     </script>
 </body>
