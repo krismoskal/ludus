@@ -1218,8 +1218,8 @@
 
         function handleVaultLogin(e) {
             e.preventDefault();
-            const player = document.getElementById('vault-player-select').value;
-            const pass = document.getElementById('vault-password-input').value;
+            const player = document.getElementById('vault-player-select').value.trim();
+            const pass = document.getElementById('vault-password-input').value.trim();
             const btn = document.getElementById('vault-submit-btn');
             const errBox = document.getElementById('vault-error-msg');
 
