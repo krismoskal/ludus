@@ -38,7 +38,8 @@
             text-align: right;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            align-items: flex-end;
+            gap: 4px;
         }
 
         .seal-title {
@@ -55,6 +56,31 @@
             letter-spacing: 1.5px;
             text-transform: uppercase;
             color: var(--gold-dim);
+        }
+
+        /* Vault Login Button */
+        .vault-trigger-btn {
+            margin-top: 6px;
+            background: transparent;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold-primary);
+            font-family: 'Georgia', serif;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vault-trigger-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
         }
 
         header {
@@ -205,7 +231,6 @@
             white-space: nowrap;
         }
 
-        /* Group Header Row */
         .group-header {
             text-align: center;
             font-size: 0.85rem;
@@ -233,7 +258,6 @@
             border-right: 1.5px solid var(--gold-dim);
         }
 
-        /* Sub-Header Row */
         .header-sub-row th {
             color: var(--gold-dim);
             font-size: 0.75rem;
@@ -245,7 +269,6 @@
             background: rgba(212, 175, 55, 0.03);
         }
 
-        /* Vertical Group Frames */
         .col-player-left { border-left: 1.5px solid var(--gold-dim); }
         .col-player-right { border-right: 1.5px solid var(--gold-dim); }
         .col-cash-right { border-right: 1.5px solid var(--gold-dim); }
@@ -264,12 +287,10 @@
             font-size: 0.92rem;
         }
 
-        /* Bottom boundary closing for last row across all 3 sections */
         tbody tr:last-child td {
             border-bottom: 1.5px solid var(--gold-dim);
         }
 
-        /* Inline Parentheses Profit Labels (without +/-) */
         .profit-tag {
             font-size: 0.78rem;
             margin-left: 5px;
@@ -357,7 +378,6 @@
             font-family: monospace;
         }
 
-        /* Roman Podium Tiers */
         .tier-primus {
             border: 2px solid var(--gold-primary);
             background: linear-gradient(135deg, #332507 0%, #1c1403 100%);
@@ -403,12 +423,163 @@
             padding: 20px;
         }
 
+        /* --- Gladiator Vault Modal --- */
+        .vault-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .vault-backdrop.open {
+            display: flex;
+        }
+
+        .vault-card {
+            background-color: var(--container-bg);
+            border: 2px solid var(--gold-primary);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 380px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .vault-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .vault-close:hover {
+            color: var(--text-light);
+        }
+
+        .vault-card h3 {
+            color: var(--gold-primary);
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-size: 1.1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--gold-subtle);
+            padding-bottom: 10px;
+        }
+
+        .vault-field {
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .vault-field label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold-dim);
+        }
+
+        .vault-field select, .vault-field input {
+            background: #110904;
+            border: 1px solid var(--gold-dim);
+            color: var(--text-light);
+            font-family: 'Georgia', serif;
+            padding: 9px 12px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .vault-field select:focus, .vault-field input:focus {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+        }
+
+        .vault-submit {
+            width: 100%;
+            background-color: var(--gold-primary);
+            border: 1px solid var(--gold-dim);
+            color: #120c06;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            font-size: 0.95rem;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .vault-submit:hover {
+            background-color: #e5b358;
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+        }
+
+        .vault-result {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 6px;
+            text-align: center;
+            display: none;
+            border: 1px solid #3a2a18;
+            background: #150e08;
+        }
+
+        .vault-result.show {
+            display: block;
+        }
+
+        .vault-amount-owed {
+            color: #ff4d4d;
+            font-size: 1.4rem;
+            font-weight: bold;
+            font-family: monospace;
+            margin-top: 4px;
+        }
+
+        .vault-amount-claim {
+            color: #2ecc71;
+            font-size: 1.4rem;
+            font-weight: bold;
+            font-family: monospace;
+            margin-top: 4px;
+        }
+
+        .vault-error {
+            color: #ff4d4d;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            text-align: center;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             body { padding: 12px 6px; }
             .section-container { padding: 16px 8px; }
             .header-seal {
                 position: static;
                 text-align: center;
+                align-items: center;
                 margin-bottom: 14px;
             }
             th, td { padding: 6px 8px; }
@@ -418,10 +589,11 @@
 </head>
 <body>
 
-    <!-- Upper Right Header Seal -->
+    <!-- Upper Right Header Seal with Vault Access -->
     <div class="header-seal">
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
+        <button type="button" class="vault-trigger-btn" onclick="openVaultModal()">🪙 Gladiator Vault</button>
     </div>
 
     <header>
@@ -457,7 +629,41 @@
         </div>
     </div>
 
+    <!-- Private Vault Modal -->
+    <div id="vault-modal" class="vault-backdrop">
+        <div class="vault-card">
+            <button type="button" class="vault-close" onclick="closeVaultModal()">&times;</button>
+            <h3>🪙 Treasury Vault</h3>
+
+            <form onsubmit="handleVaultLogin(event)">
+                <div class="vault-field">
+                    <label for="vault-player-select">Gladiator</label>
+                    <select id="vault-player-select" required>
+                        <option value="" disabled selected>Select gladiator...</option>
+                    </select>
+                </div>
+
+                <div class="vault-field">
+                    <label for="vault-password-input">Password</label>
+                    <input type="password" id="vault-password-input" placeholder="Enter arena passcode" required autocomplete="off">
+                </div>
+
+                <button type="submit" class="vault-submit" id="vault-submit-btn">Unlock Balance</button>
+            </form>
+
+            <div id="vault-error-msg" class="vault-error"></div>
+
+            <div id="vault-result-card" class="vault-result">
+                <div id="vault-result-status" style="font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;"></div>
+                <div id="vault-result-amount"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE:
+        const VAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwqrMTok0Ffyb6cuf2zbDNnggzPtCmoMOKHdIU71niZYy5bhekRwy2YlEDFE_nE27kH/exec';
+
         function handleLogoError() {
             document.getElementById('main-logo').style.display = 'none';
             document.getElementById('fallback-logo').style.display = 'block';
@@ -514,6 +720,9 @@
                 return hasDate && hasName;
             });
 
+            // Populate the Vault dropdown with known players
+            populateVaultPlayers();
+
             const buttons = document.querySelectorAll('.range-btn');
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -525,6 +734,22 @@
             });
 
             updateDashboard();
+        }
+
+        function populateVaultPlayers() {
+            const namesSet = new Set();
+            allRecords.forEach(r => {
+                const name = r[colIndices.name];
+                if (name) namesSet.add(name.trim());
+            });
+
+            const select = document.getElementById('vault-player-select');
+            Array.from(namesSet).sort().forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n;
+                opt.textContent = n.charAt(0).toUpperCase() + n.slice(1);
+                select.appendChild(opt);
+            });
         }
 
         function parseRecordDate(dateStr) {
@@ -555,9 +780,7 @@
                 if (activeRange === 'current-month') {
                     return d.getFullYear() === currYear && d.getMonth() === currMonth;
                 } else if (activeRange === 'last-3-months') {
-                    // Start of month: 2 months prior (00:00:00)
                     const startDate = new Date(currYear, currMonth - 2, 1, 0, 0, 0, 0);
-                    // End of current month (23:59:59.999)
                     const endDate = new Date(currYear, currMonth + 1, 0, 23, 59, 59, 999);
                     return d >= startDate && d <= endDate;
                 } else if (activeRange === 'current-year') {
@@ -577,7 +800,6 @@
             return cell;
         }
 
-        // Parenthetical profit display without +/- signs
         function formatProfitTag(profit) {
             const absProfit = Math.abs(profit);
             if (profit > 0) return `<span class="profit-tag profit-pos">(${absProfit})</span>`;
@@ -599,7 +821,6 @@
                 return;
             }
 
-            // Sort dates newest to oldest so the most recent battle is always at the top
             dates.sort((a, b) => {
                 const dateA = parseRecordDate(a) || 0;
                 const dateB = parseRecordDate(b) || 0;
@@ -608,7 +829,6 @@
 
             let standingsHtml = '';
             dates.forEach((date, index) => {
-                // First/most recent battle defaults to open across all views
                 const isOpen = index === 0 ? 'active' : '';
 
                 standingsHtml += `
@@ -618,11 +838,8 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <!-- Player Framed Header -->
                                         <th class="group-header header-player-group">PLAYER</th>
-                                        <!-- Cash Framed with Coins -->
                                         <th colspan="2" class="group-header header-cash-group">🪙 CASH</th>
-                                        <!-- Tournament Framed with Medals -->
                                         <th colspan="2" class="group-header header-tourney-group">🏅 TOURNAMENT</th>
                                     </tr>
                                     <tr class="header-sub-row">
@@ -802,6 +1019,72 @@
         function toggleDate(id) {
             const el = document.getElementById(id);
             if (el) el.classList.toggle('active');
+        }
+
+        /* --- Vault Modal Logic --- */
+        function openVaultModal() {
+            document.getElementById('vault-modal').classList.add('open');
+            document.getElementById('vault-error-msg').style.display = 'none';
+            document.getElementById('vault-result-card').classList.remove('show');
+            document.getElementById('vault-password-input').value = '';
+        }
+
+        function closeVaultModal() {
+            document.getElementById('vault-modal').classList.remove('open');
+        }
+
+        function handleVaultLogin(e) {
+            e.preventDefault();
+            const player = document.getElementById('vault-player-select').value;
+            const pass = document.getElementById('vault-password-input').value;
+            const btn = document.getElementById('vault-submit-btn');
+            const errBox = document.getElementById('vault-error-msg');
+            const resultBox = document.getElementById('vault-result-card');
+
+            errBox.style.display = 'none';
+            resultBox.classList.remove('show');
+            btn.textContent = 'Verifying...';
+            btn.disabled = true;
+
+            const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player)}&password=${encodeURIComponent(pass)}`;
+
+            fetch(targetUrl)
+                .then(r => r.json())
+                .then(data => {
+                    btn.textContent = 'Unlock Balance';
+                    btn.disabled = false;
+
+                    if (!data.success) {
+                        errBox.textContent = data.message || 'Verification failed.';
+                        errBox.style.display = 'block';
+                        return;
+                    }
+
+                    const statusElem = document.getElementById('vault-result-status');
+                    const amtElem = document.getElementById('vault-result-amount');
+
+                    // If 'owes me' -> player owes you (red). If 'owe' -> you owe player (green)
+                    const dType = (data.debtType || '').toLowerCase();
+                    const isDebt = dType.includes('owes me') || dType === 'owes';
+
+                    if (isDebt) {
+                        statusElem.textContent = 'You owe Dominus:';
+                        amtElem.className = 'vault-amount-owed';
+                    } else {
+                        statusElem.textContent = 'Dominus owes you:';
+                        amtElem.className = 'vault-amount-claim';
+                    }
+
+                    amtElem.textContent = data.amount;
+                    resultBox.classList.add('show');
+                })
+                .catch(err => {
+                    console.error(err);
+                    btn.textContent = 'Unlock Balance';
+                    btn.disabled = false;
+                    errBox.textContent = 'Could not contact vault API. Check Apps Script URL.';
+                    errBox.style.display = 'block';
+                });
         }
     </script>
 </body>
