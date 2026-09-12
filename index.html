@@ -565,8 +565,11 @@
                 if (activeRange === 'current-month') {
                     return d.getFullYear() === currYear && d.getMonth() === currMonth;
                 } else if (activeRange === 'last-3-months') {
-                    const threeMonthsAgo = new Date(currYear, currMonth - 2, 1);
-                    return d >= threeMonthsAgo && d <= now;
+                    // Starts on the 1st of 2 months ago (captures current month + 2 prior)
+                    const startDate = new Date(currYear, currMonth - 2, 1, 0, 0, 0, 0);
+                    // Ends on the last millisecond of the current month
+                    const endDate = new Date(currYear, currMonth + 1, 0, 23, 59, 59, 999);
+                    return d >= startDate && d <= endDate;
                 } else if (activeRange === 'current-year') {
                     return d.getFullYear() === currYear;
                 }
