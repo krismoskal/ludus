@@ -1182,12 +1182,12 @@
             const nameSpan = document.getElementById('vault-badge-name');
             const debtSpan = document.getElementById('vault-badge-debt');
 
-            nameSpan.textContent = playerName;
+            nameSpan.textContent = playerName + ':';
             if (isDebt) {
-                debtSpan.textContent = `You owe ${amount}`;
+                debtSpan.textContent = `Blood Tribute: Pay the Ludus ${amount}`;
                 debtSpan.className = 'badge-status owe-dominus';
             } else {
-                debtSpan.textContent = `Dominus owes you ${amount}`;
+                debtSpan.textContent = `Arena Bounty: Claim ${amount} from the Ludus`;
                 debtSpan.className = 'badge-status dominus-owes';
             }
 
@@ -1270,10 +1270,10 @@
                     const isDebt = dType.includes('owes me') || dType === 'owes';
 
                     if (isDebt) {
-                        statusElem.textContent = 'You owe Dominus:';
+                        statusElem.textContent = 'Blood Tribute: Pay the Ludus';
                         amtElem.className = 'vault-amount-owed';
                     } else {
-                        statusElem.textContent = 'Dominus owes you:';
+                        statusElem.textContent = 'Arena Bounty: Claim from the Ludus';
                         amtElem.className = 'vault-amount-claim';
                     }
 
