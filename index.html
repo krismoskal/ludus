@@ -638,48 +638,6 @@
             box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
         }
 
-        .vault-result {
-            margin-top: 16px;
-            padding: 14px;
-            border-radius: 6px;
-            text-align: center;
-            display: none;
-            border: 1px solid #3a2a18;
-            background: #150e08;
-        }
-
-        .vault-result.show {
-            display: block;
-        }
-
-        .vault-status-line {
-            font-size: 0.95rem;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        .vault-status-line.owe-dominus {
-            color: #ff4d4d;
-        }
-
-        .vault-status-line.dominus-owes {
-            color: #2ecc71;
-        }
-
-        .vault-status-line.settled {
-            color: var(--gold-primary);
-        }
-
-        .vault-disclaimer-modal {
-            font-size: 0.72rem;
-            color: var(--text-dim);
-            font-style: italic;
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid #2a1e12;
-            letter-spacing: 0.3px;
-        }
-
         .vault-error {
             color: #ff4d4d;
             font-size: 0.85rem;
@@ -712,8 +670,8 @@
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
 
-        <!-- Check Your Balance Trigger -->
-        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">📜 Check Your Balance</button>
+        <!-- Check Your Ludus Balance Trigger -->
+        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">📜 Check Your Ludus Balance</button>
 
         <!-- Unlocked Persistent Balance Banner with Disclaimer Sub-caption -->
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
@@ -785,11 +743,6 @@
             </form>
 
             <div id="vault-error-msg" class="vault-error"></div>
-
-            <div id="vault-result-card" class="vault-result">
-                <div id="vault-result-status" class="vault-status-line"></div>
-                <div class="vault-disclaimer-modal">Amount updated upon the close of battle night, not live during combat.</div>
-            </div>
         </div>
     </div>
 
@@ -803,6 +756,7 @@
 
         const sheetId = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
         const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
+        const infoUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=Info`;
 
         let allRecords = [];
         let colIndices = {};
@@ -829,8 +783,40 @@
                 });
         }
 
-        // Initial fetch
+        function fetchInfoPlayers() {
+            fetch(infoUrl + `&t=${Date.now()}`, { cache: 'no-store' })
+                .then(res => {
+                    if (!res.ok) throw new Error("Could not load Info tab");
+                    return res.text();
+                })
+                .then(csvText => {
+                    const rows = parseCSV(csvText);
+                    if (rows.length < 2) return;
+
+                    const headers = rows[0].map(h => h.trim().toUpperCase());
+                    let playerColIdx = headers.findIndex(h => h.includes('PLAYER') || h.includes('NAME') || h.includes('GLADIATOR'));
+                    if (playerColIdx === -1) playerColIdx = 0; // Default to first column if no named header
+
+                    const validPlayers = new Set();
+                    for (let i = 1; i < rows.length; i++) {
+                        const name = rows[i][playerColIdx];
+                        if (name && name.trim() !== '') {
+                            validPlayers.add(name.trim());
+                        }
+                    }
+
+                    if (validPlayers.size > 0) {
+                        populateVaultPlayersFromList(Array.from(validPlayers));
+                    }
+                })
+                .catch(err => {
+                    console.warn("Could not fetch Info tab for login list:", err);
+                });
+        }
+
+        // Initial fetches
         fetchSheetData();
+        fetchInfoPlayers();
 
         function parseCSV(text) {
             const lines = text.split('\n');
@@ -857,8 +843,6 @@
                 return hasDate && hasName;
             });
 
-            populateVaultPlayers();
-
             const buttons = document.querySelectorAll('.range-btn');
             buttons.forEach(btn => {
                 btn.onclick = () => {
@@ -875,18 +859,12 @@
             refreshActiveVaultBalance();
         }
 
-        function populateVaultPlayers() {
-            const namesSet = new Set();
-            allRecords.forEach(r => {
-                const name = r[colIndices.name];
-                if (name) namesSet.add(name.trim());
-            });
-
+        function populateVaultPlayersFromList(namesList) {
             const select = document.getElementById('vault-player-select');
             const currentSelected = select.value || sessionStorage.getItem('ludus_session_player');
             select.innerHTML = '<option value="" disabled selected>Select gladiator...</option>';
 
-            Array.from(namesSet).sort().forEach(n => {
+            namesList.sort().forEach(n => {
                 const opt = document.createElement('option');
                 opt.value = n;
                 opt.textContent = n.charAt(0).toUpperCase() + n.slice(1);
@@ -1226,7 +1204,6 @@
         function openVaultModal() {
             document.getElementById('vault-modal').classList.add('open');
             document.getElementById('vault-error-msg').style.display = 'none';
-            document.getElementById('vault-result-card').classList.remove('show');
             document.getElementById('vault-password-input').value = '';
         }
 
@@ -1240,10 +1217,8 @@
             const pass = document.getElementById('vault-password-input').value;
             const btn = document.getElementById('vault-submit-btn');
             const errBox = document.getElementById('vault-error-msg');
-            const resultBox = document.getElementById('vault-result-card');
 
             errBox.style.display = 'none';
-            resultBox.classList.remove('show');
             btn.textContent = 'Verifying...';
             btn.disabled = true;
 
@@ -1265,29 +1240,9 @@
                     sessionStorage.setItem('ludus_session_player', player);
                     sessionStorage.setItem('ludus_session_pass', pass);
 
-                    const statusElem = document.getElementById('vault-result-status');
-                    const dType = (data.debtType || '').toLowerCase();
-                    const isDebt = dType.includes('owes me') || dType === 'owes';
-                    const formattedAmount = ensureDollarSign(data.amount);
-                    const numericVal = parseFloat(String(data.amount).replace(/[^0-9.-]+/g, '')) || 0;
-
-                    if (numericVal === 0) {
-                        statusElem.textContent = 'Debt-free! Honor intact';
-                        statusElem.className = 'vault-status-line settled';
-                    } else if (isDebt) {
-                        statusElem.textContent = `${formattedAmount} owed to restore thy honor`;
-                        statusElem.className = 'vault-status-line owe-dominus';
-                    } else {
-                        statusElem.textContent = `Victorious! ${formattedAmount} in thy arena reserve`;
-                        statusElem.className = 'vault-status-line dominus-owes';
-                    }
-
-                    resultBox.classList.add('show');
-                    applyVaultSession(player, data.debtType, formattedAmount);
-
-                    setTimeout(() => {
-                        closeVaultModal();
-                    }, 1400);
+                    // Immediately close modal and reveal top banner
+                    closeVaultModal();
+                    applyVaultSession(player, data.debtType, data.amount);
                 })
                 .catch(err => {
                     console.error(err);
@@ -1318,6 +1273,7 @@
 
         function pollAllData() {
             fetchSheetData();
+            fetchInfoPlayers();
             refreshActiveVaultBalance();
         }
 
