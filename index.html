@@ -282,7 +282,7 @@
             display: block;
         }
 
-        /* --- 5-Column Table with Unified Framing --- */
+        /* 5-Column Table with Unified Framing */
         table {
             width: 100%;
             border-collapse: separate;
@@ -488,7 +488,7 @@
             padding: 20px;
         }
 
-        /* --- Gladiator Vault Modal --- */
+        /* Gladiator Vault Modal */
         .vault-backdrop {
             display: none;
             position: fixed;
@@ -549,7 +549,7 @@
         }
 
         .vault-field {
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
             gap: 5px;
@@ -573,7 +573,6 @@
             outline: none;
         }
 
-        /* Password input wrapper with reveal button */
         .password-input-wrapper {
             position: relative;
             display: flex;
@@ -617,26 +616,6 @@
             box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
         }
 
-        /* Remember Me Row */
-        .vault-remember-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 4px;
-            margin-bottom: 12px;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            user-select: none;
-            cursor: pointer;
-        }
-
-        .vault-remember-row input[type="checkbox"] {
-            accent-color: var(--gold-primary);
-            width: 15px;
-            height: 15px;
-            cursor: pointer;
-        }
-
         .vault-submit {
             width: 100%;
             background-color: var(--gold-primary);
@@ -651,6 +630,7 @@
             transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-top: 6px;
         }
 
         .vault-submit:hover {
@@ -801,11 +781,6 @@
                     </div>
                 </div>
 
-                <label class="vault-remember-row">
-                    <input type="checkbox" id="vault-remember-me">
-                    <span>Remember me on this device</span>
-                </label>
-
                 <button type="submit" class="vault-submit" id="vault-submit-btn">Unlock Balance</button>
             </form>
 
@@ -833,24 +808,29 @@
         let colIndices = {};
         let activeRange = 'current-month';
 
-        fetch(csvUrl)
-            .then(res => {
-                if(!res.ok) throw new Error("Network configuration block detected.");
-                return res.text();
-            })
-            .then(csvText => {
-                const rows = parseCSV(csvText);
-                if(rows.length < 2) {
-                    document.getElementById('standings-target').innerHTML = "<div class='loading'>The arena matrix ledger is empty.</div>";
-                    document.getElementById('ledger-target').innerHTML = "<div class='loading'>No gladiators found.</div>";
-                    return;
-                }
-                initApp(rows);
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('standings-target').innerHTML = "<div class='loading' style='color:#8b0000;'>Connection Broken: Ensure your Google Sheet configuration settings are set public!</div>";
-            });
+        function fetchSheetData() {
+            fetch(csvUrl + `&t=${Date.now()}`, { cache: 'no-store' })
+                .then(res => {
+                    if(!res.ok) throw new Error("Network configuration block detected.");
+                    return res.text();
+                })
+                .then(csvText => {
+                    const rows = parseCSV(csvText);
+                    if(rows.length < 2) {
+                        document.getElementById('standings-target').innerHTML = "<div class='loading'>The arena matrix ledger is empty.</div>";
+                        document.getElementById('ledger-target').innerHTML = "<div class='loading'>No gladiators found.</div>";
+                        return;
+                    }
+                    initApp(rows);
+                })
+                .catch(err => {
+                    console.error("Sheet sync error:", err);
+                    document.getElementById('standings-target').innerHTML = "<div class='loading' style='color:#8b0000;'>Connection Broken: Ensure your Google Sheet configuration settings are set public!</div>";
+                });
+        }
+
+        // Initial fetch
+        fetchSheetData();
 
         function parseCSV(text) {
             const lines = text.split('\n');
@@ -881,17 +861,17 @@
 
             const buttons = document.querySelectorAll('.range-btn');
             buttons.forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.onclick = () => {
                     buttons.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     activeRange = btn.dataset.range;
                     updateDashboard();
-                });
+                };
             });
 
             updateDashboard();
 
-            // Run initial check if credentials are remembered
+            // Refresh vault if logged in during current session
             refreshActiveVaultBalance();
         }
 
@@ -903,6 +883,9 @@
             });
 
             const select = document.getElementById('vault-player-select');
+            const currentSelected = select.value || sessionStorage.getItem('ludus_session_player');
+            select.innerHTML = '<option value="" disabled selected>Select gladiator...</option>';
+
             Array.from(namesSet).sort().forEach(n => {
                 const opt = document.createElement('option');
                 opt.value = n;
@@ -910,9 +893,8 @@
                 select.appendChild(opt);
             });
 
-            const savedPlayer = localStorage.getItem('ludus_vault_player');
-            if (savedPlayer) {
-                select.value = savedPlayer;
+            if (currentSelected) {
+                select.value = currentSelected;
             }
         }
 
@@ -971,7 +953,6 @@
             return `<span class="profit-tag profit-zero">(0)</span>`;
         }
 
-        // Helper to format clean currency without trailing decimals like .00
         function ensureDollarSign(amt) {
             if (amt === undefined || amt === null) return '$0';
             const num = parseFloat(String(amt).replace(/[^0-9.-]+/g, '')) || 0;
@@ -1192,7 +1173,7 @@
             if (el) el.classList.toggle('active');
         }
 
-        /* --- Password Visibility Toggle --- */
+        /* Password Visibility Toggle */
         function togglePasswordVisibility() {
             const pwInput = document.getElementById('vault-password-input');
             const toggleBtn = document.getElementById('toggle-pw-btn');
@@ -1206,7 +1187,7 @@
             }
         }
 
-        /* --- Vault Modal & Header Banner Logic --- */
+        /* Vault Modal & Header Banner Logic */
         function applyVaultSession(playerName, debtType, amount) {
             const dType = (debtType || '').toLowerCase();
             const isDebt = dType.includes('owes me') || dType === 'owes';
@@ -1216,7 +1197,6 @@
             const debtSpan = document.getElementById('vault-badge-debt');
             const formattedAmount = ensureDollarSign(amount);
 
-            // Extract numeric value to check for zero balance
             const numericVal = parseFloat(String(amount).replace(/[^0-9.-]+/g, '')) || 0;
 
             nameSpan.textContent = playerName + ':';
@@ -1237,8 +1217,8 @@
         }
 
         function handleVaultLogout() {
-            localStorage.removeItem('ludus_vault_player');
-            localStorage.removeItem('ludus_vault_pass');
+            sessionStorage.removeItem('ludus_session_player');
+            sessionStorage.removeItem('ludus_session_pass');
             document.getElementById('vault-badge-container').style.display = 'none';
             document.getElementById('vault-open-btn').style.display = 'inline-flex';
         }
@@ -1247,21 +1227,7 @@
             document.getElementById('vault-modal').classList.add('open');
             document.getElementById('vault-error-msg').style.display = 'none';
             document.getElementById('vault-result-card').classList.remove('show');
-
-            const savedPlayer = localStorage.getItem('ludus_vault_player');
-            const savedPass = localStorage.getItem('ludus_vault_pass');
-            const rememberCheckbox = document.getElementById('vault-remember-me');
-
-            if (savedPlayer) {
-                document.getElementById('vault-player-select').value = savedPlayer;
-            }
-            if (savedPass) {
-                document.getElementById('vault-password-input').value = savedPass;
-                rememberCheckbox.checked = true;
-            } else {
-                document.getElementById('vault-password-input').value = '';
-                rememberCheckbox.checked = false;
-            }
+            document.getElementById('vault-password-input').value = '';
         }
 
         function closeVaultModal() {
@@ -1272,7 +1238,6 @@
             e.preventDefault();
             const player = document.getElementById('vault-player-select').value;
             const pass = document.getElementById('vault-password-input').value;
-            const remember = document.getElementById('vault-remember-me').checked;
             const btn = document.getElementById('vault-submit-btn');
             const errBox = document.getElementById('vault-error-msg');
             const resultBox = document.getElementById('vault-result-card');
@@ -1296,13 +1261,9 @@
                         return;
                     }
 
-                    if (remember) {
-                        localStorage.setItem('ludus_vault_player', player);
-                        localStorage.setItem('ludus_vault_pass', pass);
-                    } else {
-                        localStorage.removeItem('ludus_vault_player');
-                        localStorage.removeItem('ludus_vault_pass');
-                    }
+                    // Keep credentials in temporary session storage only
+                    sessionStorage.setItem('ludus_session_player', player);
+                    sessionStorage.setItem('ludus_session_pass', pass);
 
                     const statusElem = document.getElementById('vault-result-status');
                     const dType = (data.debtType || '').toLowerCase();
@@ -1337,33 +1298,38 @@
                 });
         }
 
-        /* --- Live Background & Tab-Wake Polling --- */
+        /* Periodic Polling & Wake-Up Sync */
         function refreshActiveVaultBalance() {
-            const savedPlayer = localStorage.getItem('ludus_vault_player');
-            const savedPass = localStorage.getItem('ludus_vault_pass');
-            if (!savedPlayer || !savedPass) return;
+            const sessionPlayer = sessionStorage.getItem('ludus_session_player');
+            const sessionPass = sessionStorage.getItem('ludus_session_pass');
+            if (!sessionPlayer || !sessionPass) return;
 
-            fetch(`${VAULT_API_URL}?name=${encodeURIComponent(savedPlayer)}&password=${encodeURIComponent(savedPass)}&t=${Date.now()}`, {
+            fetch(`${VAULT_API_URL}?name=${encodeURIComponent(sessionPlayer)}&password=${encodeURIComponent(sessionPass)}&t=${Date.now()}`, {
                 cache: 'no-store'
             })
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    applyVaultSession(savedPlayer, data.debtType, data.amount);
+                    applyVaultSession(sessionPlayer, data.debtType, data.amount);
                 }
             })
             .catch(err => console.error("Poll update error:", err));
         }
 
-        // Wake-up refresh when player unlocks phone or switches tabs
+        function pollAllData() {
+            fetchSheetData();
+            refreshActiveVaultBalance();
+        }
+
+        // Wake-up refresh when player unlocks phone or switches back to tab
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                refreshActiveVaultBalance();
+                pollAllData();
             }
         });
 
-        // Periodic background poll every 5 minutes while viewing
-        setInterval(refreshActiveVaultBalance, 300000);
+        // 5-minute background pulse (300,000 ms)
+        setInterval(pollAllData, 300000);
     </script>
 </body>
 </html>
