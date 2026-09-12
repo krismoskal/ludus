@@ -915,7 +915,7 @@
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
 
-        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">⚔️ Gladiatorial Status Unconfirmed: Please Log In</button>
+        <button type="button" class="vault-trigger-btn" id="vault-open-btn"<button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">⚔️ Gladiator Login</button>onclick="openVaultModal()">⚔️ Gladiatorial Status Unconfirmed: Please Log In</button>
 
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
             <div class="vault-user-badge">
@@ -1050,7 +1050,7 @@
                     if (rows.length < 2) return;
 
                     const headers = rows[0].map(h => h.trim().toUpperCase());
-                    let playerColIdx = headers.findIndex(h => 
+                    let playerColIdx = headers.findIndex(h =>
                         h.includes('PERSON') || h.includes('PLAYER') || h.includes('NAME') || h.includes('GLADIATOR')
                     );
                     if (playerColIdx === -1) playerColIdx = 0;
@@ -1485,6 +1485,7 @@
             sessionStorage.removeItem('ludus_session_pass');
             document.getElementById('vault-badge-container').style.display = 'none';
             const openBtn = document.getElementById('vault-open-btn');
+            openBtn.textContent = '⚔️ Gladiator Login';
             openBtn.classList.remove('pulse-attention');
             openBtn.style.display = 'inline-flex';
         }
@@ -1514,10 +1515,10 @@
 
             const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player.trim())}&password=${encodeURIComponent(pass.trim())}&t=${Date.now()}`;
 
-            fetch(targetUrl, { 
+            fetch(targetUrl, {
                 method: 'GET',
                 redirect: 'follow',
-                cache: 'no-store' 
+                cache: 'no-store'
             })
                 .then(r => {
                     if (!r.ok) throw new Error("Network response error: " + r.status);
@@ -1544,7 +1545,7 @@
                     btn.textContent = 'Unlock Status';
                     btn.disabled = false;
                     errBox.textContent = err.message && err.message.indexOf("Network") !== -1
-                        ? 'Could not contact vault API. Check Apps Script URL.' 
+                        ? 'Could not contact vault API. Check Apps Script URL.'
                         : (err.message || 'Verification failed.');
                     errBox.style.display = 'block';
                 });
@@ -1559,7 +1560,7 @@
             fetch(`${VAULT_API_URL}?name=${encodeURIComponent(sessionPlayer)}&password=${encodeURIComponent(sessionPass)}&t=${Date.now()}`, {
                 method: 'GET',
                 redirect: 'follow',
-                cache: 'no-store' 
+                cache: 'no-store'
             })
             .then(r => {
                 if (!r.ok) throw new Error("Status: " + r.status);
