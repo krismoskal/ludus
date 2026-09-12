@@ -611,7 +611,7 @@
             color: var(--gold-primary);
         }
 
-        .vault-field select:focus,
+        .vault-field select:focus, 
         .password-input-wrapper input:focus {
             border-color: var(--gold-primary);
             box-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
@@ -731,10 +731,10 @@
     <div class="header-seal">
         <span class="seal-title">Ludus Magnus</span>
         <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
-
+        
         <!-- Check Your Balance Trigger -->
         <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">📜 Check Your Balance</button>
-
+        
         <!-- Unlocked Persistent Balance Banner with Disclaimer Sub-caption -->
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
             <div class="vault-user-badge">
@@ -891,11 +891,11 @@
 
             updateDashboard();
 
-            // Auto-login on load if credentials were saved
+            // Auto-login on load with cache-busting timestamp
             const savedPlayer = localStorage.getItem('ludus_vault_player');
             const savedPass = localStorage.getItem('ludus_vault_pass');
             if (savedPlayer && savedPass) {
-                fetch(`${VAULT_API_URL}?name=${encodeURIComponent(savedPlayer)}&password=${encodeURIComponent(savedPass)}`)
+                fetch(`${VAULT_API_URL}?name=${encodeURIComponent(savedPlayer)}&password=${encodeURIComponent(savedPass)}&t=${Date.now()}`)
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
@@ -1293,7 +1293,8 @@
             btn.textContent = 'Verifying...';
             btn.disabled = true;
 
-            const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player)}&password=${encodeURIComponent(pass)}`;
+            // Cache-busting URL to prevent browser 302 redirect caching
+            const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player)}&password=${encodeURIComponent(pass)}&t=${Date.now()}`;
 
             fetch(targetUrl)
                 .then(r => r.json())
