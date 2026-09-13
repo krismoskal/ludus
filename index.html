@@ -1254,42 +1254,47 @@
             btn.textContent = 'Verifying...';
             btn.disabled = true;
 
-            const targetUrl = `${VAULT_API_URL}?name=${encodeURIComponent(player.trim())}&password=${encodeURIComponent(pass.trim())}&t=${Date.now()}`;
+            const params = new URLSearchParams({
+                action: 'login',
+                name: player.trim(),
+                password: pass.trim(),
+                _nc: new Date().getTime()
+            });
 
-            fetch(targetUrl, {
+            fetch(`${VAULT_API_URL}?${params.toString()}`, {
                 method: 'GET',
-                redirect: 'follow',
-                cache: 'no-store'
+                mode: 'cors',
+                redirect: 'follow'
             })
-                .then(r => {
-                    if (!r.ok) throw new Error("Network response error: " + r.status);
-                    return r.json();
-                })
-                .then(data => {
-                    btn.textContent = 'Unlock Status';
-                    btn.disabled = false;
+            .then(async r => {
+                if (!r.ok) {
+                    throw new Error("HTTP " + r.status + " on authentication gateway.");
+                }
+                return r.json();
+            })
+            .then(data => {
+                btn.textContent = 'Unlock Status';
+                btn.disabled = false;
 
-                    if (!data.success) {
-                        errBox.textContent = data.message || 'Verification failed.';
-                        errBox.style.display = 'block';
-                        return;
-                    }
-
-                    sessionStorage.setItem('ludus_session_player', player);
-                    sessionStorage.setItem('ludus_session_pass', pass);
-
-                    closeVaultModal();
-                    applyVaultSession(player, data.debtType, data.amount);
-                })
-                .catch(err => {
-                    console.error("Vault Error Details:", err);
-                    btn.textContent = 'Unlock Status';
-                    btn.disabled = false;
-                    errBox.textContent = err.message && err.message.indexOf("Network") !== -1
-                        ? 'Could not contact vault API. Check Apps Script URL.'
-                        : (err.message || 'Verification failed.');
+                if (!data || !data.success) {
+                    errBox.textContent = (data && data.message) ? data.message : 'Passcode rejected by the Ludus archives.';
                     errBox.style.display = 'block';
-                });
+                    return;
+                }
+
+                sessionStorage.setItem('ludus_session_player', player);
+                sessionStorage.setItem('ludus_session_pass', pass);
+
+                closeVaultModal();
+                applyVaultSession(player, data.debtType, data.amount);
+            })
+            .catch(err => {
+                console.error("Vault Gateway Error:", err);
+                btn.textContent = 'Unlock Status';
+                btn.disabled = false;
+                errBox.textContent = 'Connection interrupted. Please wait 3 seconds and retry.';
+                errBox.style.display = 'block';
+            });
         }
 
         /* Periodic Polling & Wake-Up Sync */
@@ -1298,17 +1303,24 @@
             const sessionPass = sessionStorage.getItem('ludus_session_pass');
             if (!sessionPlayer || !sessionPass) return;
 
-            fetch(`${VAULT_API_URL}?name=${encodeURIComponent(sessionPlayer)}&password=${encodeURIComponent(sessionPass)}&t=${Date.now()}`, {
+            const params = new URLSearchParams({
+                action: 'login',
+                name: sessionPlayer.trim(),
+                password: sessionPass.trim(),
+                _nc: new Date().getTime()
+            });
+
+            fetch(`${VAULT_API_URL}?${params.toString()}`, {
                 method: 'GET',
-                redirect: 'follow',
-                cache: 'no-store'
+                mode: 'cors',
+                redirect: 'follow'
             })
             .then(r => {
                 if (!r.ok) throw new Error("Status: " + r.status);
                 return r.json();
             })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     applyVaultSession(sessionPlayer, data.debtType, data.amount);
                 }
             })
@@ -1336,9 +1348,14 @@
                 return;
             }
 
-            const apiUrl = `${VAULT_API_URL}?action=getArtifacts&date=${encodeURIComponent(folderKey)}&rawDate=${encodeURIComponent(dateStr)}&t=${Date.now()}`;
+            const params = new URLSearchParams({
+                action: 'getArtifacts',
+                date: folderKey,
+                rawDate: dateStr.trim(),
+                _nc: new Date().getTime()
+            });
 
-            fetch(apiUrl, { method: 'GET', redirect: 'follow', cache: 'no-store' })
+            fetch(`${VAULT_API_URL}?${params.toString()}`, { method: 'GET', mode: 'cors', redirect: 'follow' })
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.success && Array.isArray(data.images) && data.images.length > 0) {
