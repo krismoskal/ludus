@@ -30,57 +30,77 @@
             position: relative;
         }
 
-        /* Top-Right Ledger Seal */
-        .header-seal {
-            position: absolute;
-            top: 24px;
-            right: 28px;
-            text-align: right;
+        header {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 18px;
+        }
+
+        .logo-container {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            overflow: hidden;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
+        }
+
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: 52.3% 49.2%;
+            transform: scale(1.15);
+        }
+
+        /* Subtle Section Dividers */
+        .arena-divider {
+            width: 100%;
+            max-width: 900px;
+            height: 1px;
+            background: radial-gradient(ellipse at center, var(--gold-dim) 0%, rgba(170, 132, 28, 0.1) 75%, transparent 100%);
+            border: none;
+            margin: 0;
+        }
+
+        /* Centered Status & Login Area */
+        .status-portal-area {
+            width: 100%;
+            max-width: 900px;
+            padding: 16px 10px;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            box-sizing: border-box;
         }
 
-        .seal-title {
-            font-size: 1.15rem;
-            font-weight: bold;
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-            color: var(--gold-primary);
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
-        }
-
-        .seal-epoch {
-            font-size: 0.75rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--gold-dim);
-        }
-
-        /* Vault Trigger Button */
         .vault-trigger-btn {
-            margin-top: 6px;
-            background: transparent;
+            background: #191007;
             border: 1px solid var(--gold-dim);
             color: var(--gold-primary);
             font-family: 'Georgia', serif;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            padding: 5px 12px;
+            padding: 8px 20px;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
         }
 
         .vault-trigger-btn:hover {
             background: rgba(212, 175, 55, 0.15);
             border-color: var(--gold-primary);
-            box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
         }
 
         /* Attention pulse when denied entry to artifacts */
@@ -106,40 +126,39 @@
 
         /* Unlocked User Header Badge Container */
         .vault-badge-container {
-            margin-top: 6px;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            gap: 3px;
+            align-items: center;
+            gap: 5px;
+            text-align: center;
         }
 
         .vault-user-badge {
             background: #191007;
             border: 1px solid var(--gold-dim);
             border-radius: 4px;
-            padding: 5px 12px;
-            font-size: 0.8rem;
+            padding: 7px 16px;
+            font-size: 0.85rem;
             display: inline-flex;
             flex-direction: column;
-            align-items: flex-end;
-            gap: 2px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.6);
         }
 
         .badge-salute-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            width: 100%;
-            justify-content: flex-end;
+            justify-content: center;
+            gap: 10px;
         }
 
         .badge-player {
             font-weight: bold;
             color: var(--gold-primary);
             text-transform: capitalize;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
+            font-size: 0.92rem;
+            letter-spacing: 0.8px;
         }
 
         .badge-status.owe-dominus {
@@ -161,7 +180,7 @@
             background: transparent;
             border: none;
             color: var(--text-dim);
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             line-height: 1;
             cursor: pointer;
             padding: 0 2px;
@@ -173,36 +192,10 @@
         }
 
         .badge-disclaimer {
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             color: var(--text-dim);
             font-style: italic;
             letter-spacing: 0.3px;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-            margin-top: 10px;
-        }
-
-        .logo-container {
-            width: 220px;
-            height: 220px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-            overflow: hidden;
-            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
-        }
-
-        .logo-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: 52.3% 49.2%;
-            transform: scale(1.15);
         }
 
         /* Filter Controls */
@@ -211,6 +204,7 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
+            margin-top: 25px;
             margin-bottom: 30px;
             width: 100%;
             max-width: 900px;
@@ -878,25 +872,6 @@
             text-transform: uppercase;
         }
 
-        /* Prevent logo & seal collision on laptops / medium window widths */
-        @media (max-width: 1100px) {
-            .header-seal {
-                position: static;
-                text-align: center;
-                align-items: center;
-                margin-bottom: 15px;
-            }
-            .vault-badge-container {
-                align-items: center;
-            }
-            .vault-user-badge {
-                align-items: center;
-            }
-            .badge-salute-row {
-                justify-content: center;
-            }
-        }
-
         @media (max-width: 768px) {
             body { padding: 12px 6px; }
             .section-container { padding: 16px 8px; }
@@ -910,11 +885,22 @@
 </head>
 <body>
 
-    <!-- Upper Right Header Seal with Unconfirmed / Logged In Status -->
-    <div class="header-seal">
-        <span class="seal-title">Ludus Magnus</span>
-        <span class="seal-epoch">Poker Gladiator School • Circa 2026 AD</span>
+    <!-- Hero Medallion Header -->
+    <header>
+        <div class="logo-container">
+            <img class="logo-img" src="logo.png?v=2" alt="Ludus Magnus Logo" id="main-logo" onerror="handleLogoError()">
+            <svg id="fallback-logo" style="display:none; width:150px; height:150px;" viewBox="0 0 100 100">
+                <path d="M50,5 L85,25 L85,65 C85,85 50,95 50,95 C50,95 15,85 15,65 L15,25 Z" fill="none" stroke="#d4af37" stroke-width="4"/>
+                <path d="M35,35 L65,65 M65,35 L35,65" stroke="#aa841c" stroke-width="3"/>
+            </svg>
+        </div>
+    </header>
 
+    <!-- Top Thin Separator -->
+    <hr class="arena-divider">
+
+    <!-- Centered Gladiator Status & Login Portal -->
+    <div class="status-portal-area">
         <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">⚔️ Gladiator Login</button>
 
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
@@ -929,15 +915,8 @@
         </div>
     </div>
 
-    <header>
-        <div class="logo-container">
-            <img class="logo-img" src="logo.png?v=2" alt="Ludus Magnus Logo" id="main-logo" onerror="handleLogoError()">
-            <svg id="fallback-logo" style="display:none; width:150px; height:150px;" viewBox="0 0 100 100">
-                <path d="M50,5 L85,25 L85,65 C85,85 50,95 50,95 C50,95 15,85 15,65 L15,25 Z" fill="none" stroke="#d4af37" stroke-width="4"/>
-                <path d="M35,35 L65,65 M65,35 L35,65" stroke="#aa841c" stroke-width="3"/>
-            </svg>
-        </div>
-    </header>
+    <!-- Bottom Thin Separator -->
+    <hr class="arena-divider">
 
     <div class="filter-wrapper">
         <div class="range-selector">
@@ -1453,21 +1432,24 @@
         /* Vault Modal & Header Banner Logic */
         function applyVaultSession(playerName, debtType, amount) {
             const dType = (debtType || '').toLowerCase();
-            const isDebt = dType.includes('owes me') || dType === 'owes';
             const openBtn = document.getElementById('vault-open-btn');
             const badgeContainer = document.getElementById('vault-badge-container');
             const nameSpan = document.getElementById('vault-badge-name');
             const debtSpan = document.getElementById('vault-badge-debt');
-            const formattedAmount = ensureDollarSign(amount);
 
-            const numericVal = parseFloat(String(amount).replace(/[^0-9.-]+/g, '')) || 0;
+            // Format clean dollar amount, defaulting to 0 if empty
+            const cleanAmtStr = (amount === undefined || amount === null || String(amount).trim() === '') ? '$0' : String(amount);
+            const formattedAmount = ensureDollarSign(cleanAmtStr);
+            const numericVal = parseFloat(cleanAmtStr.replace(/[^0-9.-]+/g, '')) || 0;
 
-            nameSpan.textContent = `⚔️ Gladiator ${playerName}, Welcome!`;
+            const isHost = playerName.trim().toLowerCase() === 'kris' || (!dType && numericVal === 0);
 
-            if (numericVal === 0) {
-                debtSpan.textContent = 'Debt-free! Honor intact';
+            nameSpan.textContent = isHost ? `⚔️ Dominus ${playerName}, Welcome!` : `⚔️ Gladiator ${playerName}, Welcome!`;
+
+            if (isHost || numericVal === 0) {
+                debtSpan.textContent = isHost ? 'Honor intact • Master of the Ludus' : 'Debt-free! Honor intact';
                 debtSpan.className = 'badge-status settled';
-            } else if (isDebt) {
+            } else if (dType.includes('owes me') || dType === 'owes') {
                 debtSpan.textContent = `${formattedAmount} owed to restore thy honor`;
                 debtSpan.className = 'badge-status owe-dominus';
             } else {
@@ -1628,7 +1610,7 @@
             const isAuthenticated = !!sessionStorage.getItem('ludus_session_player');
 
             if (!isAuthenticated) {
-                // Denied in-place response: guide eyes directly to the header login
+                // Denied in-place response: guide eyes directly to the login button above
                 const originalContent = badgeElem.innerHTML;
                 badgeElem.classList.add('denied-shake');
                 badgeElem.innerHTML = '⚔️ DENIED WEAKLING! Only for Gladiators! Login at the top ↑';
