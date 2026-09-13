@@ -77,6 +77,15 @@
             justify-content: center;
             min-height: 48px;
             box-sizing: border-box;
+            gap: 10px;
+        }
+
+        .top-nav-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .vault-trigger-btn {
@@ -98,6 +107,30 @@
         }
 
         .vault-trigger-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+        }
+
+        .terminology-trigger-btn {
+            background: #191007;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold-primary);
+            font-family: 'Georgia', serif;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .terminology-trigger-btn:hover {
             background: rgba(212, 175, 55, 0.15);
             border-color: var(--gold-primary);
             box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
@@ -783,9 +816,12 @@
     <!-- Top Thin Separator -->
     <hr class="arena-divider">
 
-    <!-- Centered Gladiator Status & Login Portal -->
+    <!-- Centered Gladiator Status & Login Portal & Terminology -->
     <div class="status-portal-area">
-        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">⚔️ Gladiator Login</button>
+        <div class="top-nav-controls">
+            <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">⚔️ Gladiator Login</button>
+            <button type="button" class="terminology-trigger-btn" onclick="openTerminologyModal()">📜 Roman Terminology</button>
+        </div>
 
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
             <div class="vault-user-badge">
@@ -842,6 +878,29 @@
             </form>
 
             <div id="vault-error-msg" class="vault-error"></div>
+        </div>
+    </div>
+
+    <!-- Roman Terminology Modal -->
+    <div id="terminology-modal" class="vault-backdrop" onclick="closeTerminologyModal(event)">
+        <div class="vault-card" onclick="event.stopPropagation()" style="max-width: 440px; max-height: 85vh; overflow-y: auto;">
+            <button type="button" class="vault-close" onclick="closeTerminologyModal()">&times;</button>
+            <h3>📜 Roman Terminology</h3>
+
+            <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px; text-align: left;">
+                <div style="border-bottom: 1px solid var(--gold-subtle); padding-bottom: 10px;">
+                    <strong style="color: var(--gold-primary); text-transform: uppercase; font-size: 0.9rem;">Ludus</strong>
+                    <p style="margin: 4px 0 0 0; color: var(--text-dim); font-size: 0.85rem; line-height: 1.4;">Literally meaning "game," "play," or "training," a ludus was an official training school where gladiators were housed, drilled, and conditioned under strict discipline.</p>
+                </div>
+                <div style="border-bottom: 1px solid var(--gold-subtle); padding-bottom: 10px;">
+                    <strong style="color: var(--gold-primary); text-transform: uppercase; font-size: 0.9rem;">Lanista</strong>
+                    <p style="margin: 4px 0 0 0; color: var(--text-dim); font-size: 0.85rem; line-height: 1.4;">A private entrepreneur, broker, and owner of a gladiator troupe (familia gladiatoria). A lanista bought prisoners of war, slaves, or criminals, trained them, and rented them out to magistrates (editores) staging public games for profit. Because of their trade, they were viewed with social contempt (infamia) in Roman society, despite often acquiring immense wealth.</p>
+                </div>
+                <div>
+                    <strong style="color: var(--gold-primary); text-transform: uppercase; font-size: 0.9rem;">Ludus Magnus</strong>
+                    <p style="margin: 4px 0 0 0; color: var(--text-dim); font-size: 0.85rem; line-height: 1.4;">Translating to the "Great Ludus," this was the largest of the four official gladiator training schools in Rome. Built by Emperor Domitian near the Colosseum, it featured its own miniature amphitheater and training arena connected directly to the Colosseum by an underground tunnel.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1240,6 +1299,15 @@
 
         function closeVaultModal() {
             document.getElementById('vault-modal').classList.remove('open');
+        }
+
+        function openTerminologyModal() {
+            document.getElementById('terminology-modal').classList.add('open');
+        }
+
+        function closeTerminologyModal(event) {
+            if (event && event.target.id !== 'terminology-modal' && !event.target.classList.contains('vault-close')) return;
+            document.getElementById('terminology-modal').classList.remove('open');
         }
 
         /* Robust JSONP Login Handler - Bypasses CORS & Redirect dropped sessions */
