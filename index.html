@@ -866,7 +866,6 @@
 
         const sheetId = '1V62YP2K9cdN8ws1cf3WTmKwXzzW83KUAFcOGgN_s99M';
         const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
-        const infoUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=Info`;
 
         let allRecords = [];
         let colIndices = {};
@@ -893,7 +892,9 @@
         }
 
         function fetchInfoPlayers() {
-            fetch(infoUrl + `&t=${Date.now()}`, { cache: 'no-store' })
+            const directInfoUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=Info&headers=1&t=${Date.now()}`;
+
+            fetch(directInfoUrl, { cache: 'no-store' })
                 .then(res => {
                     if (!res.ok) throw new Error("Could not load Info tab");
                     return res.text();
@@ -910,9 +911,12 @@
 
                     const validPlayers = new Set();
                     for (let i = 1; i < rows.length; i++) {
-                        const name = rows[i][playerColIdx];
-                        if (name && name.trim() !== '') {
-                            validPlayers.add(name.trim());
+                        const row = rows[i];
+                        if (row && row[playerColIdx]) {
+                            const name = row[playerColIdx].trim();
+                            if (name !== '') {
+                                validPlayers.add(name);
+                            }
                         }
                     }
 
