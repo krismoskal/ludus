@@ -496,120 +496,6 @@
 
         .unplayed { color: #554433; font-style: italic; }
 
-        /* Podium / Ledger Styling */
-        .podium-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .year-podium-block {
-            margin-bottom: 25px;
-            padding: 15px;
-            border: 1px solid #3a2a18;
-            border-radius: 6px;
-            background: #17100a;
-        }
-
-        .year-title {
-            color: var(--gold-primary);
-            font-size: 1.25rem;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #3a2a18;
-            padding-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .gladiator-card {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #22180f 0%, #17100a 100%);
-            border: 1px solid #44321e;
-            position: relative;
-        }
-
-        .avatar-box {
-            width: 65px;
-            height: 65px;
-            margin-right: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-            background: #110904;
-            font-family: monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--gold-primary);
-            border: 1px solid #3a2a18;
-        }
-
-        .gladiator-info {
-            flex-grow: 1;
-        }
-
-        .gladiator-name {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin: 0;
-            text-transform: capitalize;
-        }
-
-        .gladiator-status {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            font-style: italic;
-            margin: 2px 0 0 0;
-        }
-
-        .gladiator-score {
-            font-size: 1.3rem;
-            font-weight: bold;
-            font-family: monospace;
-        }
-
-        .tier-primus {
-            border: 2px solid var(--gold-primary);
-            background: linear-gradient(135deg, #332507 0%, #1c1403 100%);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-        }
-        .tier-primus .gladiator-name { color: var(--gold-primary); }
-        .tier-primus .avatar-box { border: 2px solid var(--gold-primary); }
-        .tier-primus .gladiator-score { color: #2ecc71; }
-
-        .tier-secundus {
-            border: 1px solid #c0c0c0;
-            border-left: 5px solid #c0c0c0;
-        }
-        .tier-secundus .gladiator-name { color: #f0f0f0; }
-        .tier-secundus .avatar-box { border: 1px solid #c0c0c0; }
-        .tier-secundus .gladiator-score { color: #2ecc71; }
-
-        .tier-tertius {
-            border: 1px solid #cd7f32;
-            border-left: 5px solid #cd7f32;
-        }
-        .tier-tertius .gladiator-name { color: #e6b89c; }
-        .tier-tertius .avatar-box { border: 1px solid #cd7f32; }
-        .tier-tertius .gladiator-score { color: #2ecc71; }
-
-        .tier-warrior {
-            border-left: 4px solid var(--text-dim);
-        }
-        .tier-warrior .gladiator-score { color: var(--text-light); }
-
-        .tier-donkey {
-            border: 2px solid var(--accent-red);
-            background: linear-gradient(135deg, #260a0a 0%, #140303 100%);
-        }
-        .tier-donkey .gladiator-name { color: #ff4d4d; }
-        .tier-donkey .avatar-box { border: 2px solid var(--accent-red); color: #ff4d4d; }
-        .tier-donkey .gladiator-score { color: #ff4d4d; }
-
         .loading {
             text-align: center;
             color: var(--text-dim);
@@ -930,13 +816,6 @@
         </div>
     </div>
 
-    <div class="section-container">
-        <h2>⚔ Battle Ledger Timeline</h2>
-        <div id="ledger-target">
-            <div class="loading">Unrolling ancient ledger archives...</div>
-        </div>
-    </div>
-
     <!-- Private Credentials Modal -->
     <div id="vault-modal" class="vault-backdrop">
         <div class="vault-card">
@@ -1003,7 +882,6 @@
                     const rows = parseCSV(csvText);
                     if(rows.length < 2) {
                         document.getElementById('standings-target').innerHTML = "<div class='loading'>The arena matrix ledger is empty.</div>";
-                        document.getElementById('ledger-target').innerHTML = "<div class='loading'>No gladiators found.</div>";
                         return;
                     }
                     initApp(rows);
@@ -1128,7 +1006,7 @@
             const currMonth = now.getMonth();
 
             if (activeRange === 'all-years') {
-                renderAllYearsView();
+                renderStandings(allRecords);
                 return;
             }
 
@@ -1149,7 +1027,6 @@
             });
 
             renderStandings(filtered);
-            renderLedger(filtered);
         }
 
         function formatVal(cell) {
@@ -1286,124 +1163,6 @@
             dates.forEach((date, index) => {
                 checkDriveArtifacts(date, `artifact-badge-${index}`);
             });
-        }
-
-        function getRankedPlayers(records) {
-            const playerTotals = {};
-            records.forEach(row => {
-                const name = row[colIndices.name] ? row[colIndices.name].trim().toLowerCase() : null;
-                if (!name) return;
-
-                const cBuy = parseFloat(row[colIndices.cashBuy]) || 0;
-                const tBuy = parseFloat(row[colIndices.tourneyBuy]) || 0;
-                const cWin = parseFloat(row[colIndices.cashWin]) || 0;
-                const tWin = parseFloat(row[colIndices.tourneyWin]) || 0;
-
-                const netProfit = (cWin + tWin) - (cBuy + tBuy);
-                playerTotals[name] = (playerTotals[name] || 0) + netProfit;
-            });
-
-            return Object.keys(playerTotals).map(name => ({
-                name: name,
-                score: playerTotals[name]
-            })).sort((a, b) => b.score - a.score);
-        }
-
-        function renderLedger(records) {
-            const rankedPlayers = getRankedPlayers(records);
-
-            if (rankedPlayers.length === 0) {
-                document.getElementById('ledger-target').innerHTML = "<div class='loading'>No gladiators found for this epoch.</div>";
-                return;
-            }
-
-            let ledgerHtml = '<div class="podium-container">';
-            rankedPlayers.forEach((player, idx) => {
-                let tierClass = 'tier-warrior';
-                let rankTitle = 'Gladiator';
-
-                if (idx === 0) {
-                    tierClass = 'tier-primus';
-                    rankTitle = 'Primus • Arena Champion';
-                } else if (idx === 1) {
-                    tierClass = 'tier-secundus';
-                    rankTitle = 'Secundus • Second Order';
-                } else if (idx === 2) {
-                    tierClass = 'tier-tertius';
-                    rankTitle = 'Tertius • Third Order';
-                } else if (idx === rankedPlayers.length - 1 && rankedPlayers.length > 3) {
-                    tierClass = 'tier-donkey';
-                    rankTitle = 'Asinus • Field Donkey';
-                }
-
-                const scoreFormatted = (player.score >= 0 ? '+' : '') + player.score;
-
-                ledgerHtml += `
-                    <div class="gladiator-card ${tierClass}">
-                        <div class="avatar-box">#${idx + 1}</div>
-                        <div class="gladiator-info">
-                            <div class="gladiator-name">${player.name}</div>
-                            <div class="gladiator-status">${rankTitle}</div>
-                        </div>
-                        <div class="gladiator-score">${scoreFormatted}</div>
-                    </div>
-                `;
-            });
-
-            ledgerHtml += '</div>';
-            document.getElementById('ledger-target').innerHTML = ledgerHtml;
-        }
-
-        function renderAllYearsView() {
-            renderStandings(allRecords);
-
-            const yearlyRecords = {};
-            allRecords.forEach(row => {
-                const d = parseRecordDate(row[colIndices.date]);
-                const year = d ? d.getFullYear() : 'Ancient Epoch';
-                if (!yearlyRecords[year]) yearlyRecords[year] = [];
-                yearlyRecords[year].push(row);
-            });
-
-            const years = Object.keys(yearlyRecords).sort((a, b) => b - a);
-            let ledgerHtml = '';
-
-            const romanRankConfig = [
-                { tier: 'tier-primus', title: 'Primus • Arena Champion' },
-                { tier: 'tier-secundus', title: 'Secundus • Second Order' },
-                { tier: 'tier-tertius', title: 'Tertius • Third Order' }
-            ];
-
-            years.forEach(year => {
-                const top3 = getRankedPlayers(yearlyRecords[year]).slice(0, 3);
-                if (top3.length === 0) return;
-
-                ledgerHtml += `
-                    <div class="year-podium-block">
-                        <div class="year-title">Anno ${year}</div>
-                        <div class="podium-container">
-                `;
-
-                top3.forEach((player, idx) => {
-                    const role = romanRankConfig[idx];
-                    const scoreFormatted = (player.score >= 0 ? '+' : '') + player.score;
-
-                    ledgerHtml += `
-                        <div class="gladiator-card ${role.tier}">
-                            <div class="avatar-box">#${idx + 1}</div>
-                            <div class="gladiator-info">
-                                <div class="gladiator-name">${player.name}</div>
-                                <div class="gladiator-status">${role.title}</div>
-                            </div>
-                            <div class="gladiator-score">${scoreFormatted}</div>
-                        </div>
-                    `;
-                });
-
-                ledgerHtml += `</div></div>`;
-            });
-
-            document.getElementById('ledger-target').innerHTML = ledgerHtml;
         }
 
         function toggleDate(id) {
@@ -1606,7 +1365,6 @@
             const isAuthenticated = !!sessionStorage.getItem('ludus_session_player');
 
             if (!isAuthenticated) {
-                // Denied in-place response: guide eyes directly to the login button above
                 const originalContent = badgeElem.innerHTML;
                 badgeElem.classList.add('denied-shake');
                 badgeElem.innerHTML = '⚔️ DENIED WEAKLING! Only for Gladiators! Login at the top ↑';
@@ -1614,7 +1372,7 @@
                 const loginBtn = document.getElementById('vault-open-btn');
                 if (loginBtn) {
                     loginBtn.classList.remove('pulse-attention');
-                    void loginBtn.offsetWidth; // Force CSS reflow to replay pulse
+                    void loginBtn.offsetWidth;
                     loginBtn.classList.add('pulse-attention');
                 }
 
