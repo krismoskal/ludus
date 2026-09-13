@@ -228,16 +228,32 @@
             letter-spacing: 0.3px;
         }
 
-        /* Filter Controls */
-        .filter-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            margin-top: 25px;
-            margin-bottom: 30px;
+        /* Container & Integrated Header Controls */
+        .section-container {
+            background-color: var(--container-bg);
+            border: 2px solid var(--gold-dim);
+            border-radius: 8px;
+            padding: 25px;
             width: 100%;
             max-width: 900px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 40px;
+            box-sizing: border-box;
+        }
+
+        .section-header-area {
+            text-align: center;
+            border-bottom: 1px solid var(--gold-dim);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 15px 0;
+            font-size: 1.25rem;
         }
 
         .range-selector {
@@ -248,12 +264,12 @@
         }
 
         .range-btn {
-            background-color: var(--container-bg);
+            background-color: var(--bg-dark);
             border: 1px solid var(--gold-dim);
             color: var(--text-light);
             font-family: 'Georgia', serif;
-            font-size: 0.9rem;
-            padding: 8px 16px;
+            font-size: 0.85rem;
+            padding: 7px 14px;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -268,29 +284,7 @@
             background-color: var(--gold-primary);
             color: #120c06;
             font-weight: bold;
-            box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
-        }
-
-        .section-container {
-            background-color: var(--container-bg);
-            border: 2px solid var(--gold-dim);
-            border-radius: 8px;
-            padding: 25px;
-            width: 100%;
-            max-width: 900px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 40px;
-            box-sizing: border-box;
-        }
-
-        h2 {
-            color: var(--gold-primary);
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--gold-dim);
-            padding-bottom: 10px;
-            margin-top: 0;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
         }
 
         .date-group {
@@ -833,17 +827,18 @@
     <!-- Bottom Thin Separator -->
     <hr class="arena-divider">
 
-    <div class="filter-wrapper">
-        <div class="range-selector">
-            <button type="button" class="range-btn active" data-range="last-game">Last Game</button>
-            <button type="button" class="range-btn" data-range="current-month">Current Month</button>
-            <button type="button" class="range-btn" data-range="last-3-months">Last 3 Months</button>
-            <button type="button" class="range-btn" data-range="current-year">Current Year</button>
-        </div>
-    </div>
-
+    <!-- Arena Battles Container with Integrated Filter Controls -->
     <div class="section-container">
-        <h2>⚔️ Arena Battles</h2>
+        <div class="section-header-area">
+            <h2>⚔️ Arena Battles</h2>
+            <div class="range-selector">
+                <button type="button" class="range-btn active" data-range="last-game">Last Game</button>
+                <button type="button" class="range-btn" data-range="current-month">Current Month</button>
+                <button type="button" class="range-btn" data-range="last-3-months">Last 3 Months</button>
+                <button type="button" class="range-btn" data-range="current-year">Current Year</button>
+            </div>
+        </div>
+
         <div id="standings-target">
             <div class="loading">Evaluating arena champions...</div>
         </div>
@@ -1066,7 +1061,6 @@
             const currMonth = now.getMonth();
 
             if (activeRange === 'last-game') {
-                // Find the most recent date in allRecords
                 let latestDateStr = '';
                 let latestDateObj = 0;
 
