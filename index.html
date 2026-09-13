@@ -1196,7 +1196,6 @@
             const nameSpan = document.getElementById('vault-badge-name');
             const debtSpan = document.getElementById('vault-badge-debt');
 
-            // Format clean dollar amount, defaulting to 0 if empty
             const cleanAmtStr = (amount === undefined || amount === null || String(amount).trim() === '') ? '$0' : String(amount);
             const formattedAmount = ensureDollarSign(cleanAmtStr);
             const numericVal = parseFloat(cleanAmtStr.replace(/[^0-9.-]+/g, '')) || 0;
@@ -1243,6 +1242,7 @@
             document.getElementById('vault-modal').classList.remove('open');
         }
 
+        /* Robust JSONP Login Handler - Bypasses CORS & Redirect dropped sessions */
         function handleVaultLogin(e) {
             e.preventDefault();
             const player = document.getElementById('vault-player-select').value;
@@ -1254,30 +1254,30 @@
             btn.textContent = 'Verifying...';
             btn.disabled = true;
 
-            const params = new URLSearchParams({
-                action: 'login',
-                name: player.trim(),
-                password: pass.trim(),
-                _nc: new Date().getTime()
-            });
+            const callbackName = 'vaultCallback_' + Math.round(100000 * Math.random());
 
-            fetch(`${VAULT_API_URL}?${params.toString()}`, {
-                method: 'GET',
-                mode: 'cors',
-                redirect: 'follow'
-            })
-            .then(async r => {
-                if (!r.ok) {
-                    throw new Error("HTTP " + r.status + " on authentication gateway.");
-                }
-                return r.json();
-            })
-            .then(data => {
+            const timeoutId = setTimeout(() => {
+                cleanup();
+                btn.textContent = 'Unlock Status';
+                btn.disabled = false;
+                errBox.textContent = 'Connection timed out. Please retry.';
+                errBox.style.display = 'block';
+            }, 10000);
+
+            function cleanup() {
+                clearTimeout(timeoutId);
+                delete window[callbackName];
+                const scriptEl = document.getElementById(callbackName);
+                if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+            }
+
+            window[callbackName] = function(data) {
+                cleanup();
                 btn.textContent = 'Unlock Status';
                 btn.disabled = false;
 
                 if (!data || !data.success) {
-                    errBox.textContent = (data && data.message) ? data.message : 'Passcode rejected by the Ludus archives.';
+                    errBox.textContent = (data && data.message) ? data.message : 'Incorrect arena passcode.';
                     errBox.style.display = 'block';
                     return;
                 }
@@ -1287,44 +1287,44 @@
 
                 closeVaultModal();
                 applyVaultSession(player, data.debtType, data.amount);
-            })
-            .catch(err => {
-                console.error("Vault Gateway Error:", err);
+            };
+
+            const script = document.createElement('script');
+            script.id = callbackName;
+            script.src = `${VAULT_API_URL}?action=login&name=${encodeURIComponent(player.trim())}&password=${encodeURIComponent(pass.trim())}&callback=${callbackName}&_nc=${Date.now()}`;
+            script.onerror = function() {
+                cleanup();
                 btn.textContent = 'Unlock Status';
                 btn.disabled = false;
-                errBox.textContent = 'Connection interrupted. Please wait 3 seconds and retry.';
+                errBox.textContent = 'Could not contact vault API. Check Apps Script URL.';
                 errBox.style.display = 'block';
-            });
+            };
+
+            document.body.appendChild(script);
         }
 
-        /* Periodic Polling & Wake-Up Sync */
+        /* Periodic Polling via JSONP */
         function refreshActiveVaultBalance() {
             const sessionPlayer = sessionStorage.getItem('ludus_session_player');
             const sessionPass = sessionStorage.getItem('ludus_session_pass');
             if (!sessionPlayer || !sessionPass) return;
 
-            const params = new URLSearchParams({
-                action: 'login',
-                name: sessionPlayer.trim(),
-                password: sessionPass.trim(),
-                _nc: new Date().getTime()
-            });
+            const callbackName = 'vaultPoll_' + Math.round(100000 * Math.random());
 
-            fetch(`${VAULT_API_URL}?${params.toString()}`, {
-                method: 'GET',
-                mode: 'cors',
-                redirect: 'follow'
-            })
-            .then(r => {
-                if (!r.ok) throw new Error("Status: " + r.status);
-                return r.json();
-            })
-            .then(data => {
+            window[callbackName] = function(data) {
+                delete window[callbackName];
+                const el = document.getElementById(callbackName);
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+
                 if (data && data.success) {
                     applyVaultSession(sessionPlayer, data.debtType, data.amount);
                 }
-            })
-            .catch(err => console.error("Poll update error:", err));
+            };
+
+            const script = document.createElement('script');
+            script.id = callbackName;
+            script.src = `${VAULT_API_URL}?action=login&name=${encodeURIComponent(sessionPlayer)}&password=${encodeURIComponent(sessionPass)}&callback=${callbackName}&_nc=${Date.now()}`;
+            document.body.appendChild(script);
         }
 
         /* --- Drive Artifacts & Lightbox Engine --- */
@@ -1348,22 +1348,23 @@
                 return;
             }
 
-            const params = new URLSearchParams({
-                action: 'getArtifacts',
-                date: folderKey,
-                rawDate: dateStr.trim(),
-                _nc: new Date().getTime()
-            });
+            const callbackName = 'artCb_' + Math.round(100000 * Math.random());
 
-            fetch(`${VAULT_API_URL}?${params.toString()}`, { method: 'GET', mode: 'cors', redirect: 'follow' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.success && Array.isArray(data.images) && data.images.length > 0) {
-                        driveArtifactsCache[folderKey] = data.images;
-                        renderBadge(badgeElemId, folderKey, data.images);
-                    }
-                })
-                .catch(err => console.warn("Artifact error for " + dateStr, err));
+            window[callbackName] = function(data) {
+                delete window[callbackName];
+                const el = document.getElementById(callbackName);
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+
+                if (data && data.success && Array.isArray(data.images) && data.images.length > 0) {
+                    driveArtifactsCache[folderKey] = data.images;
+                    renderBadge(badgeElemId, folderKey, data.images);
+                }
+            };
+
+            const script = document.createElement('script');
+            script.id = callbackName;
+            script.src = `${VAULT_API_URL}?action=getArtifacts&date=${encodeURIComponent(folderKey)}&rawDate=${encodeURIComponent(dateStr.trim())}&callback=${callbackName}&_nc=${Date.now()}`;
+            document.body.appendChild(script);
         }
 
         function renderBadge(elemId, folderKey, images) {
