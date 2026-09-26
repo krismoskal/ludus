@@ -1111,7 +1111,6 @@
 
             nextGameData = {
                 date: formattedDate,
-                rawDateObj: parsedDateObj,
                 url: urlVal
             };
         }
@@ -1476,7 +1475,7 @@
                 urlLineEl.innerHTML = `<div onclick="alert('LINK will be available when NEXT BATTLE starts')" title="LINK will be available when NEXT BATTLE starts" style="display: inline-flex; align-items: center; gap: 4px; cursor: not-allowed;"><span style="background: rgba(212,175,55,0.1); color: var(--text-dim); padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; opacity: 0.5;">Link</span> <button style="background: transparent; border: 1px solid var(--gold-subtle); color: var(--text-dim); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; opacity: 0.4;" disabled>Copy</button></div>`;
             }
 
-            const discordUrl = 'https://discord.gg/TGp4ffsBZ';
+            const discordUrl = 'https://discord.gg/BX87KN6cu';
             const discordCopyBtnId = 'copy-discord-' + Math.random().toString(36).substring(2, 7);
             discordLineEl.innerHTML = `<a href="${discordUrl}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Link</a> <button id="${discordCopyBtnId}" onclick="copyLinkToClipboard('${discordUrl}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
 
