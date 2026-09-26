@@ -823,7 +823,7 @@
 
     <!-- Centered Gladiator Status & Login Portal -->
     <div class="status-portal-area">
-        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">🛡️ Gladiator Login</button>
+        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">🏛️ Gladiator Login</button>
 
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
             <div class="vault-user-badge">
@@ -836,8 +836,8 @@
                 </div>
             </div>
             <div id="vault-badge-collapsible" style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-family: monospace; font-size: 0.85rem; padding: 4px 0;">
-                <div id="vault-badge-debt" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
-                <div id="vault-next-game-line" style="white-space: pre-wrap; width: 100%; text-align: left; color: var(--gold-primary);"></div>
+                <div id="vault-badge-debt" style="white-space: pre-wrap; width: 100%; text-align: left; color: var(--gold-dim);"></div>
+                <div id="vault-next-game-line" style="white-space: pre-wrap; width: 100%; text-align: left; color: var(--gold-dim);"></div>
                 <span class="badge-disclaimer" style="margin-top: 4px; font-family: 'Georgia', serif; width: 100%; text-align: center;">*Not updated during active games. Accurate once the night concludes</span>
             </div>
         </div>
@@ -1377,7 +1377,7 @@
 
             const isHost = playerName.trim().toLowerCase() === 'kris' || (!dType && numericVal === 0);
 
-            nameSpan.textContent = isHost ? `🛡️ Dominus ${playerName}, Welcome!` : `🛡️ Gladiator ${playerName}, Welcome!`;
+            nameSpan.textContent = isHost ? `🏛️ Dominus ${playerName}, Welcome!` : `🏛️ Gladiator ${playerName}, Welcome!`;
 
             let statusText = '';
             let statusClassName = '';
@@ -1393,7 +1393,7 @@
                 statusClassName = 'color: #2ecc71; font-weight: bold;';
             }
 
-            debtSpan.innerHTML = `THY LUDUS STANDING*: <span style="${statusClassName}">${statusText}</span>`;
+            debtSpan.innerHTML = `STANDING*: <span style="${statusClassName}">${statusText}</span>`;
 
             if (nextGameData && nextGameData.date) {
                 const hasUrl = nextGameData.url && nextGameData.url.startsWith('http');
@@ -1401,9 +1401,9 @@
 
                 if (hasUrl) {
                     const copyBtnId = 'copy-btn-' + Math.random().toString(36).substring(2, 7);
-                    nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="color: var(--gold-primary);">${nextGameData.url}</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer; margin-left: 4px;">Copy</button>`;
+                    nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.78rem; margin-right: 4px;">Open</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
                 } else {
-                    nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — link will be available right before the game starts`;
+                    nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — not available yet`;
                 }
             } else {
                 nextGameLineEl.innerHTML = `NEXT BATTLE:         Arena closed for carnage cleanup`;
@@ -1423,7 +1423,7 @@
             sessionStorage.removeItem('ludus_session_pass');
             document.getElementById('vault-badge-container').style.display = 'none';
             const openBtn = document.getElementById('vault-open-btn');
-            openBtn.textContent = '🛡️ Gladiator Login';
+            openBtn.textContent = '🏛️ Gladiator Login';
             openBtn.classList.remove('pulse-attention');
             openBtn.style.display = 'inline-flex';
 
