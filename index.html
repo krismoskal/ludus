@@ -849,7 +849,7 @@
             <div id="vault-badge-collapsible" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
                 <div id="vault-badge-debt" class="badge-status"></div>
                 <div id="vault-next-game-details" style="margin-top: 8px; width: 100%; border-top: 1px dashed var(--gold-subtle); padding-top: 8px; font-size: 0.88rem; display: none;"></div>
-                <span class="badge-disclaimer" style="margin-top: 6px;">Accurate pre-game; updated after the night ends.</span>
+                <span class="badge-disclaimer" style="margin-top: 6px;">*Not updated during active games. Accurate once the night concludes</span>
             </div>
         </div>
     </div>
@@ -1380,7 +1380,7 @@
                 statusClassName += 'dominus-owes';
             }
 
-            debtSpan.innerHTML = `<span style="color: var(--gold-dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 6px;">Thy Ludus Standing:</span><span class="${statusClassName}">${statusText}</span>`;
+            debtSpan.innerHTML = `<span style="color: var(--gold-dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 6px;">Thy Ludus Standing*:</span><span class="${statusClassName}">${statusText}</span>`;
 
             if (nextGameData && nextGameData.date) {
                 const hasUrl = nextGameData.url && nextGameData.url.startsWith('http');
