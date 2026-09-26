@@ -876,15 +876,15 @@
                 </div>
 
                 <div class="ledger-row">
-                    <div class="ledger-label">NEXT BATTLE</div>
+                    <div class="ledger-label">URL</div>
                     <div class="ledger-colon">:</div>
-                    <div id="vault-next-game-line" class="ledger-val" style="color: var(--text-light);"></div>
+                    <div id="vault-url-line" class="ledger-val"></div>
                 </div>
 
                 <div class="ledger-row">
-                    <div class="ledger-label">ARENA URL</div>
+                    <div class="ledger-label">NEXT BATTLE</div>
                     <div class="ledger-colon">:</div>
-                    <div id="vault-url-line" class="ledger-val"></div>
+                    <div id="vault-next-game-line" class="ledger-val" style="color: var(--text-light);"></div>
                 </div>
 
                 <div class="ledger-row">
@@ -1079,8 +1079,7 @@
                 return;
             }
 
-            const headers = rows[0].map(h => h.trim().toUpperCase());
-            // Column A is Date, Column B is URL based on your updated sheet structure
+            // Column A is Date, Column B is URL
             const dateVal = rows[1][0] ? rows[1][0].trim() : '';
             const urlVal = rows[1][1] ? rows[1][1].trim() : '';
 
@@ -1193,22 +1192,6 @@
             }
             const d = new Date(clean);
             return isNaN(d.getTime()) ? null : d;
-        }
-
-        function getCountdownString(targetDateObj) {
-            if (!targetDateObj || isNaN(targetDateObj.getTime())) return '';
-            try {
-                const now = new Date();
-                const diffTime = targetDateObj - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays === 0) return '(Today)';
-                if (diffDays === 1) return '(Tomorrow)';
-                if (diffDays > 1) return `(in ${diffDays} days)`;
-                return '';
-            } catch (e) {
-                return '';
-            }
         }
 
         function updateDashboard() {
@@ -1481,8 +1464,7 @@
             debtSpan.innerHTML = `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
 
             if (nextGameData && nextGameData.date) {
-                const countdown = getCountdownString(nextGameData.rawDateObj);
-                nextGameLineEl.innerHTML = `${nextGameData.date} ${countdown}`;
+                nextGameLineEl.innerHTML = `${nextGameData.date}`;
             } else {
                 nextGameLineEl.innerHTML = `To be determined...`;
             }
