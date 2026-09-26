@@ -1385,17 +1385,17 @@
             let statusColor = '';
 
             if (isHost || numericVal === 0) {
-                statusText = isHost ? 'Honor intact • Master of the Ludus' : 'Debt-free! Honor intact';
-                statusColor = 'var(--gold-primary)';
+                statusText = 'zero balance';
+                statusColor = 'var(--text-light)';
             } else if (dType.includes('owes me') || dType === 'owes') {
-                statusText = `${formattedAmount} owed to restore thy honor`;
+                statusText = `owe ludus ${formattedAmount}`;
                 statusColor = '#ff4d4d';
             } else {
-                statusText = `Victorious! ${formattedAmount} in thy arena reserve`;
+                statusText = `ludus owes you ${formattedAmount}`;
                 statusColor = '#2ecc71';
             }
 
-            debtSpan.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">STANDING<span style="color: #ffffff;">*</span>   :</span> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
+            debtSpan.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">MY LOOT<span style="color: #ffffff;">*</span>   :</span> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
 
             if (nextGameData && nextGameData.date) {
                 const hasUrl = nextGameData.url && nextGameData.url.startsWith('http');
@@ -1403,9 +1403,9 @@
 
                 if (hasUrl) {
                     const copyBtnId = 'copy-btn-' + Math.random().toString(36).substring(2, 7);
-                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Invite Link</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
+                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Link</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
                 } else {
-                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — &lt;link not available&gt;`;
+                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — <span style="color: var(--text-dim); opacity: 0.5; cursor: not-allowed;" title="Link will be available at game time">&lt;link not available&gt;</span>`;
                 }
             } else {
                 nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> Arena closed for carnage cleanup`;
