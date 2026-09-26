@@ -168,7 +168,7 @@
             padding: 12px 20px;
             border-radius: 6px;
             box-shadow: 0 0 12px rgba(0,0,0,0.6);
-            max-width: 680px;
+            max-width: 700px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -838,6 +838,7 @@
             <div id="vault-badge-collapsible" style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-family: monospace; font-size: 0.85rem; padding: 4px 0;">
                 <div id="vault-badge-debt" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
                 <div id="vault-next-game-line" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
+                <div id="vault-url-line" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
                 <div id="vault-discord-line" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
                 <span class="badge-disclaimer" style="margin-top: 4px; font-family: 'Georgia', serif; width: 100%; text-align: center;"><span style="color: #ffffff;">*</span>Not updated during active games. Accurate once the night concludes</span>
             </div>
@@ -1129,6 +1130,25 @@
             return isNaN(d.getTime()) ? null : d;
         }
 
+        function getCountdownString(dateStr, timeStr) {
+            try {
+                const fullStr = `${dateStr}${timeStr ? ' ' + timeStr : ''} 2026`;
+                const targetDate = new Date(fullStr);
+                if (isNaN(targetDate.getTime())) return '';
+                
+                const now = new Date();
+                const diffTime = targetDate - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 0) return '(Today)';
+                if (diffDays === 1) return '(Tomorrow)';
+                if (diffDays > 1) return `(in ${diffDays} days)`;
+                return '';
+            } catch (e) {
+                return '';
+            }
+        }
+
         function updateDashboard() {
             const now = new Date();
             const currYear = now.getFullYear();
@@ -1371,6 +1391,7 @@
             const nameSpan = document.getElementById('vault-badge-name');
             const debtSpan = document.getElementById('vault-badge-debt');
             const nextGameLineEl = document.getElementById('vault-next-game-line');
+            const urlLineEl = document.getElementById('vault-url-line');
             const discordLineEl = document.getElementById('vault-discord-line');
 
             const cleanAmtStr = (amount === undefined || amount === null || String(amount).trim() === '') ? '$0' : String(amount);
@@ -1398,22 +1419,23 @@
             debtSpan.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">MY LOOT<span style="color: #ffffff;">*</span>   :</span> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
 
             if (nextGameData && nextGameData.date) {
-                const hasUrl = nextGameData.url && nextGameData.url.startsWith('http');
                 const datetimeStr = `${nextGameData.date}${nextGameData.time ? ' ' + nextGameData.time : ''}`;
-
-                if (hasUrl) {
-                    const copyBtnId = 'copy-btn-' + Math.random().toString(36).substring(2, 7);
-                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Link</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
-                } else {
-                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — <span style="color: var(--text-dim); opacity: 0.5; cursor: not-allowed;" title="Link will be available at game time">&lt;link not available&gt;</span>`;
-                }
+                const countdown = getCountdownString(nextGameData.date, nextGameData.time);
+                nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} ${countdown}`;
             } else {
-                nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> Arena closed for carnage cleanup`;
+                nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> To be determined...`;
+            }
+
+            if (nextGameData && nextGameData.url && nextGameData.url.startsWith('http')) {
+                const copyBtnId = 'copy-btn-' + Math.random().toString(36).substring(2, 7);
+                urlLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">URL         :</span> <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Link</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
+            } else {
+                urlLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">URL         :</span> <span style="background: rgba(212,175,55,0.1); color: var(--text-dim); padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; margin-right: 4px; opacity: 0.5; cursor: not-allowed; pointer-events: none;" title="LINK will be available when NEXT BATTLE starts">Link</span> <button style="background: transparent; border: 1px solid var(--gold-subtle); color: var(--text-dim); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; opacity: 0.4; cursor: not-allowed; pointer-events: none;" disabled>Copy</button>`;
             }
 
             const discordUrl = 'https://discord.gg/TGp4ffsBZ';
             const discordCopyBtnId = 'copy-discord-' + Math.random().toString(36).substring(2, 7);
-            discordLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">DISCORD     :</span> <a href="${discordUrl}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Invite Link</a> <button id="${discordCopyBtnId}" onclick="copyLinkToClipboard('${discordUrl}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
+            discordLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">VOICE CHAT  :</span> <a href="${discordUrl}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Link</a> <button id="${discordCopyBtnId}" onclick="copyLinkToClipboard('${discordUrl}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
 
             openBtn.classList.remove('pulse-attention');
             openBtn.style.display = 'none';
