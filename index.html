@@ -168,7 +168,7 @@
             padding: 12px 20px;
             border-radius: 6px;
             box-shadow: 0 0 12px rgba(0,0,0,0.6);
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -201,27 +201,6 @@
             color: var(--gold-primary);
             text-transform: capitalize;
             letter-spacing: 0.8px;
-        }
-
-        .badge-status {
-            font-size: 0.95rem;
-            letter-spacing: 0.5px;
-            margin-top: 2px;
-        }
-
-        .badge-status.owe-dominus {
-            color: #ff4d4d;
-            font-weight: bold;
-        }
-
-        .badge-status.dominus-owes {
-            color: #2ecc71;
-            font-weight: bold;
-        }
-
-        .badge-status.settled {
-            color: var(--gold-primary);
-            font-weight: bold;
         }
 
         .badge-ctrl-btn {
@@ -456,6 +435,16 @@
         tbody tr td {
             border-bottom: 1px solid #261c10;
             color: var(--text-light);
+        }
+
+        /* Logged-in gladiator table row highlight */
+        tbody tr.highlighted-gladiator td {
+            background-color: rgba(212, 175, 55, 0.18) !important;
+            border-top: 1px solid var(--gold-primary);
+            border-bottom: 1px solid var(--gold-primary);
+        }
+        tbody tr.highlighted-gladiator .td-player-name {
+            color: var(--gold-primary) !important;
         }
 
         .td-player-name {
@@ -834,7 +823,7 @@
 
     <!-- Centered Gladiator Status & Login Portal -->
     <div class="status-portal-area">
-        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">⚔️ Gladiator Login</button>
+        <button type="button" class="vault-trigger-btn" id="vault-open-btn" onclick="openVaultModal()">🛡️ Gladiator Login</button>
 
         <div id="vault-badge-container" class="vault-badge-container" style="display: none;">
             <div class="vault-user-badge">
@@ -1024,7 +1013,8 @@
                     parseAndStoreNextGame(rows);
                 })
                 .catch(err => {
-                    console.warn("Next Game tab warning:", err);
+                    console.warn("Next Game tab warning (Non-critical):", err);
+                    nextGameData = null;
                 });
         }
 
@@ -1050,7 +1040,6 @@
                 return;
             }
 
-            // Remove comma from day if present (e.g., "Sat, Oct 3" -> "Sat Oct 3")
             let cleanDate = dVal.trim().replace(/([A-Za-z]+),\s*/, '$1 ');
 
             nextGameData = {
@@ -1220,6 +1209,9 @@
                 return dateB - dateA;
             });
 
+            const sessionPlayer = sessionStorage.getItem('ludus_session_player') || '';
+            const loggedInNormalized = sessionPlayer.trim().toLowerCase();
+
             let standingsHtml = '';
             dates.forEach((date, index) => {
                 const isOpen = index === 0 ? 'active' : '';
@@ -1288,14 +1280,18 @@
 
                 sortedGameRows.forEach(item => {
                     const row = item.row;
+                    const playerName = row[colIndices.name] ? row[colIndices.name].trim() : '';
+                    const isHighlighted = loggedInNormalized !== '' && playerName.toLowerCase() === loggedInNormalized;
+                    const rowClass = isHighlighted ? 'highlighted-gladiator' : '';
+
                     const cashOutDisplay = item.hasCash ? `${formatVal(item.rawCW)} ${formatProfitTag(item.cashProfit)}` : '<span class="unplayed">—</span>';
                     const tourneyOutDisplay = item.hasTourney ? `${formatVal(item.rawTW)} ${formatProfitTag(item.tourneyProfit)}` : '<span class="unplayed">—</span>';
                     const playerTag = item.playedAny ? formatProfitTag(item.totalProfit) : '';
 
                     standingsHtml += `
-                        <tr>
+                        <tr class="${rowClass}">
                             <td class="td-player-name col-player-left col-player-right">
-                                <span>${row[colIndices.name] || '-'}</span>${playerTag}
+                                <span>${playerName || '-'}</span>${playerTag}
                             </td>
 
                             <td>${formatVal(item.rawCB)}</td>
@@ -1381,7 +1377,7 @@
 
             const isHost = playerName.trim().toLowerCase() === 'kris' || (!dType && numericVal === 0);
 
-            nameSpan.textContent = isHost ? `⚔️ Dominus ${playerName}, Welcome!` : `⚔️ Gladiator ${playerName}, Welcome!`;
+            nameSpan.textContent = isHost ? `🛡️ Dominus ${playerName}, Welcome!` : `🛡️ Gladiator ${playerName}, Welcome!`;
 
             let statusText = '';
             let statusClassName = '';
@@ -1404,7 +1400,7 @@
                 const datetimeStr = `${nextGameData.date}${nextGameData.time ? ' ' + nextGameData.time : ''}`;
 
                 if (hasUrl) {
-                    const copyBtnId = 'copy-btn-' + Math.random().toString(36.substring(2, 7));
+                    const copyBtnId = 'copy-btn-' + Math.random().toString(36).substring(2, 7);
                     nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="color: var(--gold-primary);">${nextGameData.url}</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer; margin-left: 4px;">Copy</button>`;
                 } else {
                     nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — link will be available right before the game starts`;
@@ -1416,6 +1412,10 @@
             openBtn.classList.remove('pulse-attention');
             openBtn.style.display = 'none';
             badgeContainer.style.display = 'flex';
+
+            if (allRecords.length > 0) {
+                updateDashboard();
+            }
         }
 
         function handleVaultLogout() {
@@ -1423,9 +1423,13 @@
             sessionStorage.removeItem('ludus_session_pass');
             document.getElementById('vault-badge-container').style.display = 'none';
             const openBtn = document.getElementById('vault-open-btn');
-            openBtn.textContent = '⚔️ Gladiator Login';
+            openBtn.textContent = '🛡️ Gladiator Login';
             openBtn.classList.remove('pulse-attention');
             openBtn.style.display = 'inline-flex';
+
+            if (allRecords.length > 0) {
+                updateDashboard();
+            }
         }
 
         function openVaultModal() {
