@@ -839,7 +839,7 @@
                 <div id="vault-badge-debt" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
                 <div id="vault-next-game-line" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
                 <div id="vault-discord-line" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
-                <span class="badge-disclaimer" style="margin-top: 4px; font-family: 'Georgia', serif; width: 100%; text-align: center;">*Not updated during active games. Accurate once the night concludes</span>
+                <span class="badge-disclaimer" style="margin-top: 4px; font-family: 'Georgia', serif; width: 100%; text-align: center;"><span style="color: #ffffff;">*</span>Not updated during active games. Accurate once the night concludes</span>
             </div>
         </div>
     </div>
@@ -1386,16 +1386,16 @@
 
             if (isHost || numericVal === 0) {
                 statusText = isHost ? 'Honor intact • Master of the Ludus' : 'Debt-free! Honor intact';
-                statusColor = 'var(--gold-primary)'; // Yellow/Gold for settled
+                statusColor = 'var(--gold-primary)';
             } else if (dType.includes('owes me') || dType === 'owes') {
                 statusText = `${formattedAmount} owed to restore thy honor`;
-                statusColor = '#ff4d4d'; // Red for owed
+                statusColor = '#ff4d4d';
             } else {
                 statusText = `Victorious! ${formattedAmount} in thy arena reserve`;
-                statusColor = '#2ecc71'; // Green for positive reserve
+                statusColor = '#2ecc71';
             }
 
-            debtSpan.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">STANDING<span style="color: #ffffff;">*</span>     :</span> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
+            debtSpan.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">STANDING<span style="color: #ffffff;">*</span>   :</span> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
 
             if (nextGameData && nextGameData.date) {
                 const hasUrl = nextGameData.url && nextGameData.url.startsWith('http');
@@ -1403,17 +1403,17 @@
 
                 if (hasUrl) {
                     const copyBtnId = 'copy-btn-' + Math.random().toString(36).substring(2, 7);
-                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE   :</span> ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Open</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
+                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Invite Link</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
                 } else {
-                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE   :</span> ${datetimeStr} — link not available yet`;
+                    nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> ${datetimeStr} — &lt;link not available&gt;`;
                 }
             } else {
-                nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE   :</span> Arena closed for carnage cleanup`;
+                nextGameLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">NEXT BATTLE :</span> Arena closed for carnage cleanup`;
             }
 
             const discordUrl = 'https://discord.gg/TGp4ffsBZ';
             const discordCopyBtnId = 'copy-discord-' + Math.random().toString(36).substring(2, 7);
-            discordLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">DISCORD LINK  :</span> <a href="${discordUrl}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Open</a> <button id="${discordCopyBtnId}" onclick="copyLinkToClipboard('${discordUrl}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
+            discordLineEl.innerHTML = `<span style="color: var(--gold-primary); font-weight: bold;">DISCORD     :</span> <a href="${discordUrl}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 2px 8px; border-radius: 3px; text-decoration: none; font-weight: bold; font-size: 0.75rem; margin-right: 4px;">Invite Link</a> <button id="${discordCopyBtnId}" onclick="copyLinkToClipboard('${discordUrl}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer;">Copy</button>`;
 
             openBtn.classList.remove('pulse-attention');
             openBtn.style.display = 'none';
