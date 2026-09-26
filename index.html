@@ -168,7 +168,7 @@
             padding: 12px 20px;
             border-radius: 6px;
             box-shadow: 0 0 12px rgba(0,0,0,0.6);
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -846,10 +846,10 @@
                     <button type="button" class="badge-ctrl-btn badge-logout-btn" onclick="handleVaultLogout()" title="Relinquish Command / Lock">&times;</button>
                 </div>
             </div>
-            <div id="vault-badge-collapsible" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-                <div id="vault-badge-debt" class="badge-status"></div>
-                <div id="vault-next-game-details" style="margin-top: 8px; width: 100%; border-top: 1px dashed var(--gold-subtle); padding-top: 8px; font-size: 0.88rem; display: none;"></div>
-                <span class="badge-disclaimer" style="margin-top: 6px;">*Not updated during active games. Accurate once the night concludes</span>
+            <div id="vault-badge-collapsible" style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-family: monospace; font-size: 0.85rem; padding: 4px 0;">
+                <div id="vault-badge-debt" style="white-space: pre-wrap; width: 100%; text-align: left;"></div>
+                <div id="vault-next-game-line" style="white-space: pre-wrap; width: 100%; text-align: left; color: var(--gold-primary);"></div>
+                <span class="badge-disclaimer" style="margin-top: 4px; font-family: 'Georgia', serif; width: 100%; text-align: center;">*Not updated during active games. Accurate once the night concludes</span>
             </div>
         </div>
     </div>
@@ -1050,8 +1050,11 @@
                 return;
             }
 
+            // Remove comma from day if present (e.g., "Sat, Oct 3" -> "Sat Oct 3")
+            let cleanDate = dVal.trim().replace(/([A-Za-z]+),\s*/, '$1 ');
+
             nextGameData = {
-                date: dVal.trim(),
+                date: cleanDate,
                 time: tVal ? tVal.trim() : '',
                 url: uVal ? uVal.trim() : '',
                 note: noteVal ? noteVal.trim() : ''
@@ -1349,6 +1352,20 @@
             }
         }
 
+        function copyLinkToClipboard(url, btnElem) {
+            navigator.clipboard.writeText(url).then(() => {
+                const originalText = btnElem.textContent;
+                btnElem.textContent = 'Copied!';
+                btnElem.style.color = '#2ecc71';
+                setTimeout(() => {
+                    btnElem.textContent = originalText;
+                    btnElem.style.color = 'var(--gold-primary)';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy URL:', err);
+            });
+        }
+
         /* Vault Modal & Header Banner Logic */
         function applyVaultSession(playerName, debtType, amount) {
             const dType = (debtType || '').toLowerCase();
@@ -1356,7 +1373,7 @@
             const badgeContainer = document.getElementById('vault-badge-container');
             const nameSpan = document.getElementById('vault-badge-name');
             const debtSpan = document.getElementById('vault-badge-debt');
-            const nextGameDetailsEl = document.getElementById('vault-next-game-details');
+            const nextGameLineEl = document.getElementById('vault-next-game-line');
 
             const cleanAmtStr = (amount === undefined || amount === null || String(amount).trim() === '') ? '$0' : String(amount);
             const formattedAmount = ensureDollarSign(cleanAmtStr);
@@ -1367,39 +1384,33 @@
             nameSpan.textContent = isHost ? `⚔️ Dominus ${playerName}, Welcome!` : `⚔️ Gladiator ${playerName}, Welcome!`;
 
             let statusText = '';
-            let statusClassName = 'badge-status ';
+            let statusClassName = '';
 
             if (isHost || numericVal === 0) {
                 statusText = isHost ? 'Honor intact • Master of the Ludus' : 'Debt-free! Honor intact';
-                statusClassName += 'settled';
+                statusClassName = 'color: var(--gold-primary); font-weight: bold;';
             } else if (dType.includes('owes me') || dType === 'owes') {
                 statusText = `${formattedAmount} owed to restore thy honor`;
-                statusClassName += 'owe-dominus';
+                statusClassName = 'color: #ff4d4d; font-weight: bold;';
             } else {
                 statusText = `Victorious! ${formattedAmount} in thy arena reserve`;
-                statusClassName += 'dominus-owes';
+                statusClassName = 'color: #2ecc71; font-weight: bold;';
             }
 
-            debtSpan.innerHTML = `<span style="color: var(--gold-dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 6px;">Thy Ludus Standing*:</span><span class="${statusClassName}">${statusText}</span>`;
+            debtSpan.innerHTML = `THY LUDUS STANDING*: <span style="${statusClassName}">${statusText}</span>`;
 
             if (nextGameData && nextGameData.date) {
                 const hasUrl = nextGameData.url && nextGameData.url.startsWith('http');
-                nextGameDetailsEl.style.display = 'block';
-                nextGameDetailsEl.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
-                        <span style="color: var(--gold-primary); font-weight: bold; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 1px;">Next Summoning</span>
-                        <span style="color: var(--text-light); font-size: 0.92rem;">📅 ${nextGameData.date} ${nextGameData.time ? 'at ' + nextGameData.time : ''}</span>
-                        ${hasUrl ? `
-                            <a href="${nextGameData.url}" target="_blank" style="background: var(--gold-primary); color: #120c06; padding: 6px 18px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 10px rgba(212,175,55,0.4); margin-top: 4px;">
-                                ⚔️ Enter Arena Battle
-                            </a>
-                        ` : `
-                            <span style="color: var(--text-dim); font-style: italic; font-size: 0.8rem;">${nextGameData.note || 'Arena battle link materializes minutes before clash.'}</span>
-                        `}
-                    </div>
-                `;
+                const datetimeStr = `${nextGameData.date}${nextGameData.time ? ' ' + nextGameData.time : ''}`;
+
+                if (hasUrl) {
+                    const copyBtnId = 'copy-btn-' + Math.random().toString(36.substring(2, 7));
+                    nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — <a href="${nextGameData.url}" target="_blank" style="color: var(--gold-primary);">${nextGameData.url}</a> <button id="${copyBtnId}" onclick="copyLinkToClipboard('${nextGameData.url}', this)" style="background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-primary); font-family: monospace; font-size: 0.75rem; padding: 1px 6px; border-radius: 3px; cursor: pointer; margin-left: 4px;">Copy</button>`;
+                } else {
+                    nextGameLineEl.innerHTML = `NEXT BATTLE:         ${datetimeStr} — link will be available right before the game starts`;
+                }
             } else {
-                nextGameDetailsEl.style.display = 'none';
+                nextGameLineEl.innerHTML = `NEXT BATTLE:         Arena closed for carnage cleanup`;
             }
 
             openBtn.classList.remove('pulse-attention');
