@@ -1060,7 +1060,9 @@
         function parseCSV(text) {
             const lines = text.split('\n');
             return lines.map(line => {
-                return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"\vert{}"$/g, '').trim());
+                return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => {
+                    return cell.replace(/^["']|["']$/g, '').trim();
+                });
             });
         }
 
@@ -1342,17 +1344,17 @@
             nameSpan.textContent = isHost ? `⚔️ Dominus ${playerName}, Welcome!` : `⚔️ Gladiator ${playerName}, Welcome!`;
 
             let statusText = '';
-            let statusClassName = 'badge-status';
+            let statusClassName = 'badge-status ';
 
             if (isHost || numericVal === 0) {
                 statusText = isHost ? 'Honor intact • Master of the Ludus' : 'Debt-free! Honor intact';
-                statusClassName = 'badge-status settled';
+                statusClassName += 'settled';
             } else if (dType.includes('owes me') || dType === 'owes') {
                 statusText = `${formattedAmount} owed to restore thy honor`;
-                statusClassName = 'badge-status owe-dominus';
+                statusClassName += 'owe-dominus';
             } else {
                 statusText = `Victorious! ${formattedAmount} in thy arena reserve`;
-                statusClassName = 'badge-status dominus-owes';
+                statusClassName += 'dominus-owes';
             }
 
             debtSpan.innerHTML = `<span style="color: var(--gold-dim); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 6px;">Thy Ludus Standing:</span><span class="${statusClassName}">${statusText}</span>`;
