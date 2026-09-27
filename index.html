@@ -329,11 +329,11 @@
 
         .date-header {
             background-color: #261c10;
-            padding: 10px 15px;
+            padding: 12px 15px;
             cursor: pointer;
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            justify-content: space-between;
+            align-items: center;
             font-weight: bold;
             color: var(--gold-primary);
             transition: background 0.2s;
@@ -343,23 +343,20 @@
             background-color: #362817;
         }
 
-        .date-header-top {
+        .date-header-left {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            width: 100%;
+            gap: 8px;
         }
 
         .date-header-awards {
             display: flex;
-            justify-content: flex-start;
-            gap: 16px;
-            font-size: 0.78rem;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.82rem;
             font-family: 'Georgia', serif;
             font-weight: normal;
             color: var(--text-dim);
-            border-top: 1px solid rgba(170, 132, 28, 0.2);
-            padding-top: 4px;
         }
 
         .award-item {
@@ -373,41 +370,23 @@
             font-weight: bold;
         }
 
-        .header-left-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .artifact-badge {
-            background: rgba(212, 175, 55, 0.15);
-            border: 1px solid var(--gold-dim);
+        /* Clickable date styling when artifacts exist */
+        .artifact-date-link {
             color: var(--gold-primary);
-            font-size: 0.75rem;
-            font-weight: normal;
-            letter-spacing: 0.5px;
-            padding: 2px 9px;
-            border-radius: 12px;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 4px;
             cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            user-select: none;
+            transition: color 0.2s;
         }
 
-        .artifact-badge:hover {
-            background: rgba(212, 175, 55, 0.35);
-            border-color: var(--gold-primary);
-            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        .artifact-date-link:hover {
+            color: #ffea88;
+            text-decoration-style: solid;
         }
 
-        .artifact-badge.denied-shake {
-            background: rgba(139, 0, 0, 0.45);
-            border-color: #ff4d4d;
+        .artifact-date-link.denied-shake {
             color: #ff4d4d;
-            font-weight: bold;
             animation: shake 0.3s ease-in-out;
         }
 
@@ -1384,11 +1363,8 @@
                 standingsHtml += `
                     <div class="date-group ${isOpen}" id="group-${index}">
                         <div class="date-header" onclick="toggleDate('group-${index}')">
-                            <div class="date-header-top">
-                                <div class="header-left-group">
-                                    <span>${date}</span>
-                                    <span id="artifact-badge-${index}"></span>
-                                </div>
+                            <div class="date-header-left">
+                                <span id="date-label-${index}">${date}</span>
                             </div>
                             ${awardsHtml}
                         </div>
@@ -1441,7 +1417,7 @@
             document.getElementById('standings-target').innerHTML = standingsHtml;
 
             dates.forEach((date, index) => {
-                checkDriveArtifacts(date, `artifact-badge-${index}`);
+                checkDriveArtifacts(date, `date-label-${index}`);
             });
         }
 
@@ -1684,7 +1660,7 @@
         let currentGallery = [];
         let currentGalleryIndex = 0;
 
-        function checkDriveArtifacts(dateStr, badgeElemId) {
+        function checkDriveArtifacts(dateStr, labelElemId) {
             const d = parseRecordDate(dateStr);
             let folderKey = dateStr.trim();
 
@@ -1696,7 +1672,7 @@
             }
 
             if (driveArtifactsCache[folderKey]) {
-                renderBadge(badgeElemId, folderKey, driveArtifactsCache[folderKey]);
+                attachArtifactToDate(labelElemId, folderKey, driveArtifactsCache[folderKey]);
                 return;
             }
 
@@ -1709,7 +1685,7 @@
 
                 if (data && data.success && Array.isArray(data.images) && data.images.length > 0) {
                     driveArtifactsCache[folderKey] = data.images;
-                    renderBadge(badgeElemId, folderKey, data.images);
+                    attachArtifactToDate(labelElemId, folderKey, data.images);
                 }
             };
 
@@ -1719,29 +1695,28 @@
             document.body.appendChild(script);
         }
 
-        function renderBadge(elemId, folderKey, images) {
-            const badgeContainer = document.getElementById(elemId);
-            if (!badgeContainer || images.length === 0) return;
+        function attachArtifactToDate(labelElemId, folderKey, images) {
+            const labelElem = document.getElementById(labelElemId);
+            if (!labelElem || images.length === 0) return;
 
             const count = images.length;
-            const label = count === 1 ? '1 Artifact' : `${count} Artifacts`;
+            const labelText = labelElem.textContent;
 
-            badgeContainer.innerHTML = `
-                <span class="artifact-badge" onclick="handleArtifactClick('${folderKey}', this, event)">
-                    📷 ${label}
-                </span>
-            `;
+            labelElem.className = 'artifact-date-link';
+            labelElem.title = count === 1 ? '1 Photo Artifact (Click to view)' : `${count} Photo Artifacts (Click to view)`;
+            labelElem.onclick = (e) => {
+                e.stopPropagation();
+                handleArtifactClick(folderKey, labelElem);
+            };
         }
 
-        function handleArtifactClick(folderKey, badgeElem, event) {
-            if (event) event.stopPropagation();
-
+        function handleArtifactClick(folderKey, labelElem) {
             const isAuthenticated = !!sessionStorage.getItem('ludus_session_player');
 
             if (!isAuthenticated) {
-                const originalContent = badgeElem.innerHTML;
-                badgeElem.classList.add('denied-shake');
-                badgeElem.innerHTML = '⚔️ DENIED WEAKLING! Only for Gladiators! Login at the top ↑';
+                const originalText = labelElem.textContent;
+                labelElem.classList.add('denied-shake');
+                labelElem.textContent = '⚔️ DENIED WEAKLING! Login at top ↑';
 
                 const loginBtn = document.getElementById('vault-open-btn');
                 if (loginBtn) {
@@ -1751,8 +1726,8 @@
                 }
 
                 setTimeout(() => {
-                    badgeElem.classList.remove('denied-shake');
-                    badgeElem.innerHTML = originalContent;
+                    labelElem.classList.remove('denied-shake');
+                    labelElem.textContent = originalText;
                 }, 3200);
 
                 return;
